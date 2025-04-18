@@ -5,6 +5,7 @@
 #include "oled_driver.h"
 #include "adc_driver.h"   // Include the new ADC driver header
 #include <stdio.h>
+#include "system_cw32f003.h" // Include for SystemCoreClock variable
 
 static bool System_Init(void);
 static void Display_Status(void);
@@ -18,8 +19,14 @@ int32_t main(void)
         
         Error_Handler();
     }
-    
+
+    // Display initial status including clock speed
     Display_Status();
+
+    // Display Clock Speed on Line 0
+    char clkStr[20];
+    sprintf(clkStr, "Clk: %luMHz", SystemCoreClock / 1000000); // Format clock in MHz
+    Update_OLED_Display(4, clkStr);
 
 
     while(1) {
@@ -37,7 +44,7 @@ int32_t main(void)
         sprintf(tempStr, "T: %.1fC", temperature);
         Update_OLED_Display(3, tempStr); // Display temperature on line 3
 
-        FirmwareDelay(500000); // Delay (adjust if needed for faster/slower updates)
+        FirmwareDelay(3000000); // Delay adjusted for 48MHz clock (was 500000 for 8MHz)
     }
 }
 

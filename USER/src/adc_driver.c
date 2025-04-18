@@ -38,8 +38,8 @@ bool ADC_Driver_Init(void)
     ADC_SingleChStructure.ADC_Chmux = ADC_ExInputCH1;          // Select Channel 1 (PA01)
     ADC_SingleChStructure.ADC_DiscardEn = ADC_DiscardNull;     // Keep the result
     ADC_SingleChStructure.ADC_InitStruct.ADC_OpMode = ADC_SingleChOneMode; // Single channel, single conversion
-    ADC_SingleChStructure.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div16; // ADC clock divider (adjust as needed)
-    ADC_SingleChStructure.ADC_InitStruct.ADC_SampleTime = ADC_SampTime10Clk; // Sample time (adjust as needed)
+    ADC_SingleChStructure.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div32; // ADC clock divider (Adjusted for 48MHz HCLK)
+    ADC_SingleChStructure.ADC_InitStruct.ADC_SampleTime = ADC_SampTime5Clk; // Sample time (adjust as needed)
     ADC_SingleChStructure.ADC_InitStruct.ADC_VrefSel = ADC_Vref_VDD; // Reference voltage (adjust as needed, e.g., ADC_Vref_BGR1p5)
     ADC_SingleChStructure.ADC_InitStruct.ADC_InBufEn = ADC_BufDisable; // Input Buffer (adjust as needed)
     ADC_SingleChStructure.ADC_InitStruct.ADC_TsEn = ADC_TsDisable;    // Temperature sensor disabled
@@ -97,8 +97,8 @@ uint16_t ADC_Read_Voltage_mV(void)
 
     // Configure structure for voltage reading (similar to ADC_Driver_Init)
     ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_OpMode = ADC_SingleChOneMode;
-    ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div16;
-    ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_SampleTime = ADC_SampTime10Clk; // Use sample time from Init
+    ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div32;      // Adjusted for 48MHz HCLK
+    ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_SampleTime = ADC_SampTime5Clk; // Use sample time from Init
     ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_VrefSel = ADC_Vref_VDD;      // Use VDD reference
     ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_InBufEn = ADC_BufDisable;    // Use buffer setting from Init
     ADC_SingleChStructure_Volt.ADC_InitStruct.ADC_TsEn = ADC_TsDisable;       // Disable Temperature Sensor
@@ -163,7 +163,7 @@ float ADC_Read_Internal_Temperature(void)
 
     // Configure ADC structure specifically for temperature reading
     ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_OpMode = ADC_SingleChOneMode; // Single channel, single conversion
-    ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div16;       // Use same clock division as init? Or adjust if needed.
+    ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div32;       // Adjusted for 48MHz HCLK
     ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_SampleTime = ADC_SampTime10Clk; // Use longest defined sample time
     ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_VrefSel = ADC_Vref_BGR1p5;    // Step 5: Select 1.5V internal reference
     ADC_SingleChStructure_Temp.ADC_InitStruct.ADC_InBufEn = ADC_BufEnable;      // Step 9: Enable input buffer

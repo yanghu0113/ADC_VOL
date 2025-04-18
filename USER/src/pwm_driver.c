@@ -92,9 +92,9 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     else if (prescalerValue < 256) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV256; // Check if DIV256 exists
     else return false; // Prescaler too large for defined enums - Return failure
 
-
+    // Use the calculated prescaler enum value
     ATIM_InitStruct.ClockSelect = ATIM_CLOCK_PCLK;
-    ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV8; // Keep specific prescaler for now, could be macro'd
+    // ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV8; // Remove hardcoded value
     ATIM_InitStruct.ReloadValue = arrValue;
     ATIM_InitStruct.RepetitionCounter = 0;
     ATIM_InitStruct.UnderFlowMask = DISABLE;

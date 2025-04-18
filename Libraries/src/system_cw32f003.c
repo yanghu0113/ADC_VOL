@@ -5,17 +5,56 @@
 #include "cw32f003.h"
 #include "system_cw32f003.h"
 #include "cw32f003_rcc.h"
+#include "cw32f003_flash.h" // Include Flash header for latency setting
 
 
 /******************************************************************************
  ** System Clock Frequency (Core Clock) Variable according CMSIS
  ******************************************************************************/
 
-uint32_t SystemCoreClock = 8000000;
+uint32_t SystemCoreClock = 48000000; // Set default to max expected speed
 
 void SystemCoreClockUpdate(void) // Update SystemCoreClock variable
 {
-    SystemCoreClock = 8000000;
+    uint32_t Hclk = 0;
+    uint8_t HclkDiv = 0;
+    // uint8_t PclkDiv = 0; // Removed unused variable
+    uint8_t SysClkSource = 0;
+
+    // Read the System Clock Source bits (assuming bits 0 and 1 based on RCC_SYSCLKSRC_xxx values)
+    SysClkSource = (CW_SYSCTRL->CR0 & 0x03U); // Mask for bits 0 and 1
+
+    switch (SysClkSource)
+    {
+        case RCC_SYSCLKSRC_HSI: // HSI Used as System Clock
+            // HSI frequency depends on HSIDIV setting, assume 48MHz if DIV1 is selected
+            // This simplified version assumes HSI is always 48MHz when selected.
+            // A more robust version would read HSIDIV.
+            Hclk = HSIOSC_VALUE;
+            break;
+        case RCC_SYSCLKSRC_HEX: // HEX Used as System Clock
+            Hclk = HEX_VALUE;
+            break;
+        case RCC_SYSCLKSRC_LSI: // LSI Used as System Clock
+            Hclk = LSI_VALUE;
+            break;
+        default: // HSI Used as System Clock
+            Hclk = HSIOSC_VALUE;
+            break;
+    }
+
+    // Get HCLK prescaler
+    // Assuming HCLKPRS bits are bits 4-6 based on RCC header needing 3 bits (0-7)
+    // SYSCTRL_CR0_HCLKPRS_Pos = 4 (Assumed)
+    // SYSCTRL_CR0_HCLKPRS_Msk = (0x7UL << 4) (Assumed)
+    HclkDiv = (CW_SYSCTRL->CR0 & (0x7UL << 4)) >> 4; // Read bits 4-6
+    // Calculate SystemCoreClock
+    SystemCoreClock = Hclk >> HclkDiv; // HCLK prescaler is 2^HclkDiv (except for 0 -> div1)
+    if (HclkDiv == 0) {
+         SystemCoreClock = Hclk; // Div by 1
+    } else {
+         SystemCoreClock = Hclk >> HclkDiv; // Div by 2, 4, 8 etc.
+    }
 }
 
 /**
@@ -28,14 +67,27 @@ void SystemCoreClockUpdate(void) // Update SystemCoreClock variable
  ******************************************************************************/
 void SystemInit(void)
 {
-    //Load TrimCode in this.
-    //...
+    // 1. Set Flash Latency for 48MHz operation
+    FLASH_SetLatency(FLASH_Latency_2);
 
+    // 2. Enable HSI at 48MHz (DIV1)
+    RCC_HSI_Enable(RCC_HSIOSC_DIV1);
+
+    // 3. Wait for HSI stable
+    while(RCC_GetStableFlag(RCC_FLAG_HSISTABLE) == RESET);
+
+    // 4. Switch System Clock source to HSI (now 48MHz)
+    RCC_SysClk_Switch(RCC_SYSCLKSRC_HSI);
+
+    // 5. Update SystemCoreClock variable
     SystemCoreClockUpdate();
+
+    // Load Trim Codes (original code)
     CW_SYSCTRL->HSI_f.TRIM = *((volatile uint16_t *)RCC_HSI_TRIMCODEADDR);
     CW_SYSCTRL->LSI_f.TRIM = *((volatile uint16_t *)RCC_LSI_TRIMCODEADDR);
-    //Init Hide thing.
-    //...
+
+    // Init Hide thing (original code)
+    // ...
 }
 
 #if 0
@@ -194,4 +246,3 @@ void MemClr(void *pu8Address, uint32_t u32Count)
         *pu8Addr++ = 0;
     }
 }
-

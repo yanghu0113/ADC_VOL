@@ -11,3 +11,4 @@
 .\output\exe\system_cw32f003.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armcc.h
 .\output\exe\system_cw32f003.o: ..\Libraries\inc\system_cw32f003.h
 .\output\exe\system_cw32f003.o: ..\Libraries\inc\cw32f003_rcc.h
+.\output\exe\system_cw32f003.o: ..\Libraries\inc\cw32f003_flash.h
