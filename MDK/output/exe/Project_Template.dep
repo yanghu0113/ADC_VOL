@@ -1,6 +1,6 @@
 Dependencies for Project 'Project', Target 'Template': (DO NOT MODIFY !)
 F (..\startup_cw32f003.s)(0x6260CE10)(--cpu Cortex-M0+ -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include--pd "__UVISION_VERSION SETA 524" --pd "_RTE_ SETA 1"-o .\output\exe\startup_cw32f003.o --depend .\output\exe\startup_cw32f003.d)
-F (..\USER\src\main.c)(0x68021971)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\main.o --omf_browse .\output\exe\main.crf --depend .\output\exe\main.d)
+F (..\USER\src\main.c)(0x6802F688)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\main.o --omf_browse .\output\exe\main.crf --depend .\output\exe\main.d)
 I (..\USER\inc\main.h)(0x6801B7CB)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
@@ -24,6 +24,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
 I (..\USER\inc\pwm_driver.h)(0x68008981)
 I (..\USER\inc\oled_driver.h)(0x6800896A)
 I (..\USER\inc\adc_driver.h)(0x6801F2D3)
+I (..\Libraries\inc\cw32f003_iwdt.h)(0x6260CE10)
 F (..\USER\src\interrupts_cw32f003.c)(0x67FC2CEA)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\interrupts_cw32f003.o --omf_browse .\output\exe\interrupts_cw32f003.crf --depend .\output\exe\interrupts_cw32f003.d)
 I (..\USER\src\../inc/main.h)(0x6801B7CB)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
@@ -395,7 +396,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
-F (..\Libraries\src\system_cw32f003.c)(0x68021BFD)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\system_cw32f003.o --omf_browse .\output\exe\system_cw32f003.crf --depend .\output\exe\system_cw32f003.d)
+F (..\Libraries\src\system_cw32f003.c)(0x6802EB62)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\system_cw32f003.o --omf_browse .\output\exe\system_cw32f003.crf --depend .\output\exe\system_cw32f003.d)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B8344)

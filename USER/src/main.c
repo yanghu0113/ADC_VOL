@@ -6,6 +6,7 @@
 #include "adc_driver.h"   // Include the new ADC driver header
 #include <stdio.h>
 #include "system_cw32f003.h" // Include for SystemCoreClock variable
+#include "cw32f003_iwdt.h"   // Include IWDT header
 
 static bool System_Init(void);
 static void Display_Status(void);
@@ -25,11 +26,14 @@ int32_t main(void)
 
     // Display Clock Speed on Line 0
     char clkStr[20];
-    sprintf(clkStr, "Clk: %luMHz", SystemCoreClock / 1000000); // Format clock in MHz
-    Update_OLED_Display(4, clkStr);
+    sprintf(clkStr, "Clk: %uMHz", SystemCoreClock / 1000000); // Format clock in MHz
+    Update_OLED_Display(0, clkStr);
 
 
     while(1) {
+        // Feed the Independent Watchdog Timer
+        IWDT_Refresh();
+
         /* Read ADC Voltage and update display */
         uint16_t voltage_mV = ADC_Read_Voltage_mV(); // Read voltage in mV
         char voltStr[20];
@@ -44,7 +48,7 @@ int32_t main(void)
         sprintf(tempStr, "T: %.1fC", temperature);
         Update_OLED_Display(3, tempStr); // Display temperature on line 3
 
-        FirmwareDelay(3000000); // Delay adjusted for 48MHz clock (was 500000 for 8MHz)
+        FirmwareDelay(1000000); // Delay adjusted for 48MHz clock (was 500000 for 8MHz)
     }
 }
 
@@ -61,9 +65,6 @@ static bool System_Init(void)
         status = false;
         return status; /* 提前返回，因为OLED无法显示欢迎信息 */
     }
-    
-    /* 显示欢迎信息 */
-    OLED_ShowString(0, 0, "Hello CW32!", 6);
     
     /* 初始化UART通信 */
     if (!UART_Driver_Init(DEBUG_UART_BAUDRATE)) {
@@ -85,8 +86,22 @@ static bool System_Init(void)
         return status;
     }
 
+    /* 初始化IWDT (Independent Watchdog Timer) */
+    IWDT_InitTypeDef IWDT_InitStruct;
+    RCC_APBPeriphClk_Enable1(RCC_APB1_PERIPH_IWDT, ENABLE); // Enable IWDT clock
+
+    IWDT_InitStruct.IWDT_Prescaler = IWDT_Prescaler_DIV256; // Prescaler = 256
+    IWDT_InitStruct.IWDT_ReloadValue = 100;                 // Reload value (Timeout ~2.56s with 10kHz LSI)
+    IWDT_InitStruct.IWDT_OverFlowAction = IWDT_OVERFLOW_ACTION_RESET; // Reset on overflow
+    IWDT_InitStruct.IWDT_ITState = DISABLE;                 // Interrupt disabled
+    IWDT_InitStruct.IWDT_WindowValue = 0xFFF;               // Window disabled
+    IWDT_InitStruct.IWDT_Pause = IWDT_SLEEP_CONTINUE;       // Continue in sleep modes
+    IWDT_Init(&IWDT_InitStruct);
+    IWDT_Cmd(); // Start the IWDT
+
     /* 初始化成功 */
     printf("\r\nCW32F003 Drivers Initialized Successfully\r\n");
+    printf("IWDT Initialized (Timeout ~2.5s)\r\n");
     return status;
 } // <-- Restore missing closing brace for System_Init
 
