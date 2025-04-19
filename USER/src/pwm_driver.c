@@ -158,3 +158,71 @@ uint8_t PWM_Get_DutyCycle(void)
 {
     return pwm_duty_cycle;
 }
+
+/**
+ * @brief Starts the PWM timer counter.
+ */
+void PWM_Start(void)
+{
+    // Assuming ATIM is the timer used (as configured in Init)
+    ATIM_Cmd(ENABLE);
+}
+
+/**
+ * @brief Stops the PWM timer counter.
+ */
+void PWM_Stop(void)
+{
+    // Assuming ATIM is the timer used
+    ATIM_Cmd(DISABLE);
+}
+
+/**
+ * @brief Sets the PWM duty cycle percentage.
+ * @param dutyCyclePercent New duty cycle (0-100).
+ * @return true if successful, false otherwise (e.g., invalid parameter).
+ */
+bool PWM_Set_DutyCycle(uint8_t dutyCyclePercent)
+{
+    uint16_t arrValue = 0;
+    uint16_t ccrValue = 0;
+
+    if (dutyCyclePercent > 100)
+    {
+        return false; // Invalid parameter
+    }
+
+    // Get the current auto-reload value (period)
+    // Assuming ATIM is the timer used
+    arrValue = CW_ATIM->ARR; // Read ARR directly
+
+    // Calculate new compare value (CCR)
+    // Ensure calculation handles potential overflow if arrValue is large
+    ccrValue = (uint16_t)(((uint32_t)(arrValue + 1) * dutyCyclePercent) / 100);
+
+    // Set the compare value for the correct channel (assuming CH2B for PA06 as in Init)
+    // Assuming ATIM is the timer used
+    ATIM_SetCompare2B(ccrValue);
+
+    // Update stored duty cycle
+    pwm_duty_cycle = dutyCyclePercent;
+
+    return true;
+}
+
+/**
+ * @brief Sets the PWM frequency.
+ * @param freqHz New frequency in Hz.
+ * @return true if successful, false otherwise (e.g., frequency not achievable).
+ * @note This is more complex as it requires recalculating prescaler and ARR.
+ *       It might be simpler to call PWM_Driver_Init again.
+ *       Placeholder implementation returns false.
+ */
+bool PWM_Set_Frequency(uint32_t freqHz)
+{
+    // TODO: Implement frequency change logic (recalculate PSC, ARR, CCR)
+    // This involves similar logic to PWM_Driver_Init's calculation part.
+    // For now, just update the stored value if needed, but don't change hardware.
+    // pwm_frequency = freqHz; // Optional: update stored value even if hardware not changed
+    return false; // Indicate frequency change is not implemented yet
+}

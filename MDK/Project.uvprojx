@@ -425,6 +425,36 @@
               <FileType>1</FileType>
               <FilePath>..\USER\src\adc_driver.c</FilePath>
             </File>
+            <File>
+              <FileName>ac_measurement.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\ac_measurement.c</FilePath>
+            </File>
+            <File>
+              <FileName>charging_sm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\charging_sm.c</FilePath>
+            </File>
+            <File>
+              <FileName>contactor_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\contactor_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>cp_signal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\cp_signal.c</FilePath>
+            </File>
+            <File>
+              <FileName>pp_signal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\pp_signal.c</FilePath>
+            </File>
+            <File>
+              <FileName>ui_display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\ui_display.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

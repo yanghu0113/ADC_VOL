@@ -3,14 +3,16 @@
 #include "uart_driver.h"
 #include "pwm_driver.h"
 #include "oled_driver.h"
-#include "adc_driver.h"   // Include the new ADC driver header
+#include "adc_driver.h"   // Include the ADC driver header (used by submodules)
 #include <stdio.h>
 #include "system_cw32f003.h" // Include for SystemCoreClock variable
 #include "cw32f003_iwdt.h"   // Include IWDT header
 
+// Include new charging gun modules
+#include "charging_sm.h"
+#include "ui_display.h"
+
 static bool System_Init(void);
-static void Display_Status(void);
-static void Update_OLED_Display(uint8_t line, const char* str); // Modified to accept line number
 static void Error_Handler(void);
 
 
@@ -21,34 +23,29 @@ int32_t main(void)
         Error_Handler();
     }
 
-    // Display initial status including clock speed
-    Display_Status();
+    // Initialize the Charging State Machine and UI
+    SM_Init();
+    UI_Display_Init(); // Initialize the UI display
 
-    // Display Clock Speed on Line 0
-    char clkStr[20];
-    sprintf(clkStr, "Clk: %uMHz", SystemCoreClock / 1000000); // Format clock in MHz
-    Update_OLED_Display(0, clkStr);
-
+    // Start Watchdog *after* all initialization is complete
+    IWDT_Cmd();                  // Start the watchdog counter
+    while (!CW_IWDT->SR_f.RUN);  // Wait until the watchdog is running
+    IWDT_Refresh();              // Perform an initial refresh immediately after starting
 
     while(1) {
-        // Feed the Independent Watchdog Timer
+    
+        // Run the charging state machine logic
+        SM_RunStateMachine();
+
+        // Update the display based on the current state
+        UI_UpdateDisplay();
+
+        // Refresh the watchdog
         IWDT_Refresh();
 
-        /* Read ADC Voltage and update display */
-        uint16_t voltage_mV = ADC_Read_Voltage_mV(); // Read voltage in mV
-        char voltStr[20];
-        // Format as V: X.XXX V (integer division for volts, modulo for millivolts)
-        sprintf(voltStr, "V: %u.%03uV", voltage_mV / 1000, voltage_mV % 1000);
-        Update_OLED_Display(2, voltStr); // Display voltage on line 2
-
-        /* Read Internal Temperature and update display */
-        float temperature = ADC_Read_Internal_Temperature();
-        char tempStr[20];
-        // Format as T: XX.XC (requires float support in sprintf)
-        sprintf(tempStr, "T: %.1fC", temperature);
-        Update_OLED_Display(3, tempStr); // Display temperature on line 3
-
-        FirmwareDelay(1000000); // Delay adjusted for 48MHz clock (was 500000 for 8MHz)
+        // Add a small delay to prevent excessive polling/CPU usage
+        // Adjust as needed for responsiveness vs power consumption
+        FirmwareDelay(100000); // Approx 2ms delay at 48MHz
     }
 }
 
@@ -86,60 +83,32 @@ static bool System_Init(void)
         return status;
     }
 
-    /* 初始化IWDT (Independent Watchdog Timer) */
+    /* 初始化IWDT (Independent Watchdog Timer - Assuming RC10K source based on example) */
     IWDT_InitTypeDef IWDT_InitStruct;
-    RCC_APBPeriphClk_Enable1(RCC_APB1_PERIPH_IWDT, ENABLE); // Enable IWDT clock
+    RCC_APBPeriphClk_Enable1(RCC_APB1_PERIPH_IWDT, ENABLE); // Enable IWDT peripheral clock
 
-    IWDT_InitStruct.IWDT_Prescaler = IWDT_Prescaler_DIV256; // Prescaler = 256
-    IWDT_InitStruct.IWDT_ReloadValue = 100;                 // Reload value (Timeout ~2.56s with 10kHz LSI)
+    // Configure IWDT for a ~500ms timeout
+    IWDT_InitStruct.IWDT_Prescaler = IWDT_Prescaler_DIV32;      // Prescaler = 32 (Clock = 10kHz / 32 = 312.5Hz)
+    IWDT_InitStruct.IWDT_ReloadValue = 155;                     // Reload value (Timeout = (155+1) / 312.5Hz = 0.4992s)
     IWDT_InitStruct.IWDT_OverFlowAction = IWDT_OVERFLOW_ACTION_RESET; // Reset on overflow
-    IWDT_InitStruct.IWDT_ITState = DISABLE;                 // Interrupt disabled
-    IWDT_InitStruct.IWDT_WindowValue = 0xFFF;               // Window disabled
-    IWDT_InitStruct.IWDT_Pause = IWDT_SLEEP_CONTINUE;       // Continue in sleep modes
-    IWDT_Init(&IWDT_InitStruct);
-    IWDT_Cmd(); // Start the IWDT
+    IWDT_InitStruct.IWDT_ITState = DISABLE;                     // Interrupt disabled
+    IWDT_InitStruct.IWDT_WindowValue = 0xFFF;                   // Window disabled
+    IWDT_InitStruct.IWDT_Pause = IWDT_SLEEP_CONTINUE;           // Continue in sleep modes (Adjust if needed)
+
+    // Initialization sequence based on example (Configure only, don't start yet)
+    IWDT_Unlock(); // Unlock needed before Init? Example doesn't show it here, but keep for safety? Let's remove based on example.
+    IWDT_Init(&IWDT_InitStruct); // Initialize with settings
+    // IWDT_Cmd();                  // Start the watchdog counter - MOVED TO main()
+    // while (!CW_IWDT->SR_f.RUN);  // Wait until the watchdog is running - MOVED TO main()
+    // IWDT_Refresh();              // Perform an initial refresh immediately after starting - MOVED TO main()
 
     /* 初始化成功 */
     printf("\r\nCW32F003 Drivers Initialized Successfully\r\n");
-    printf("IWDT Initialized (Timeout ~2.5s)\r\n");
+    printf("IWDT Initialized (Timeout ~500ms)\r\n"); // Updated comment
     return status;
-} // <-- Restore missing closing brace for System_Init
-
-// Restore missing function definitions
-/**
- * @brief 显示系统状态信息
- */
-static void Display_Status(void)
-{
-    unsigned long pwmFreq = PWM_Get_Frequency();
-    uint8_t pwmDuty = PWM_Get_DutyCycle();
-    char strTemp[30];
-
-    printf("PWM Freq: %lu Hz, Duty: %u%%\r\n", pwmFreq, pwmDuty);
-
-    sprintf(strTemp, "Freq:%luHz Duty:%u%%", pwmFreq, pwmDuty);
-
-    Update_OLED_Display(1, strTemp); // Display PWM info on line 1
 }
 
-/**
- * @brief 在中断保护的临界区内更新OLED指定行显示
- * @param line 要显示的行 (0-based)
- * @param str 要显示的字符串
- */
-static void Update_OLED_Display(uint8_t line, const char* str)
-{
-    /* 禁用PWM中断 (如果ADC读取或OLED操作与PWM中断冲突) */
-    /* 注意: 频繁开关中断可能影响PWM精度，根据实际情况调整 */
-    // NVIC_DisableIRQ(PWM_TIMER_IRQn);
-
-    /* 执行OLED显示操作 */
-    OLED_ShowString(0, line, (char*)str, 6); // Use specified line
-
-    /* 重新启用PWM中断 */
-    // NVIC_EnableIRQ(PWM_TIMER_IRQn);
-}
-
+// Removed Display_Status and Update_OLED_Display as UI is handled by ui_display module
 
 static void Error_Handler(void)
 {

@@ -7,6 +7,10 @@
 
 // Function prototypes
 bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent); // Changed return type to bool
+void PWM_Start(void); // Added prototype
+void PWM_Stop(void);  // Added prototype (assuming it exists or might be needed)
+bool PWM_Set_Frequency(uint32_t freqHz); // Added prototype (assuming it exists or might be needed)
+bool PWM_Set_DutyCycle(uint8_t dutyCyclePercent); // Added prototype
 uint32_t PWM_Get_Frequency(void);
 uint8_t PWM_Get_DutyCycle(void);
 

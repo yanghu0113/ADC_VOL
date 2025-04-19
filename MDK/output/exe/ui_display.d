@@ -1,0 +1,17 @@
+.\output\exe\ui_display.o: ..\USER\src\ui_display.c
+.\output\exe\ui_display.o: ..\USER\inc\ui_display.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\output\exe\ui_display.o: ..\USER\inc\oled_driver.h
+.\output\exe\ui_display.o: ..\Libraries\inc\cw32f003.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armcc.h
+.\output\exe\ui_display.o: ..\Libraries\inc\system_cw32f003.h
+.\output\exe\ui_display.o: ..\Libraries\inc\base_types.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+.\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\output\exe\ui_display.o: ..\USER\inc\charging_sm.h
+.\output\exe\ui_display.o: ..\USER\inc\ac_measurement.h
