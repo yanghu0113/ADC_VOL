@@ -3,6 +3,7 @@
 #include "charging_sm.h"    // To get current state
 #include "ac_measurement.h" // To get current reading
 #include <stdio.h>          // For sprintf
+#include <string.h>         // For memset
 
 // --- Initialization ---
 
@@ -24,6 +25,12 @@ void UI_Display_Init(void)
  */
 void UI_UpdateDisplay(void)
 {
+    // Clear the buffer before drawing new content
+    #ifdef OLED_USE_BUFFER
+    extern uint8_t OLED_GRAM[]; // Make buffer accessible
+    memset(OLED_GRAM, 0x00, sizeof(OLED_GRAM)); // Clear the buffer
+    #endif
+
     SM_State_t current_sm_state = SM_GetCurrentState();
     float current_amps = 0.0f;
     char state_str[20] = "State: ";
@@ -53,14 +60,17 @@ void UI_UpdateDisplay(void)
     }
 
     // Update OLED (Example layout: State on line 1, Current on line 2)
-    // Clear previous content might be needed depending on font/update method
-    // A simple approach is to clear lines before writing.
-    OLED_ShowString(0, 1, "                ", 6); // Clear line 1 (assuming 6x8 font)
+    // Draw directly to buffer (or screen if buffer disabled)
     OLED_ShowString(0, 1, state_str, 6);
-
-    OLED_ShowString(0, 2, "                ", 6); // Clear line 2
     OLED_ShowString(0, 2, current_str, 6);
+        OLED_ShowString(0, 3, current_str, 6);
+
 
     // Add other info (Voltage, Temperature from main.c?) to other lines if desired
     // Example: Keep Voltage/Temp from main.c on lines 3 & 4
+
+    // Update the physical screen from the buffer if enabled
+    #ifdef OLED_USE_BUFFER
+    OLED_UpdateScreen();
+    #endif
 }

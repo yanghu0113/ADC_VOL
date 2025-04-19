@@ -5,8 +5,13 @@
 #include "Font.h"
 #include <string.h>
 
+// Define the screen buffer if used (moved to top)
+#ifdef OLED_USE_BUFFER
+#include "oled_driver.h" // Need OLED_WIDTH/HEIGHT defines
+uint8_t OLED_GRAM[OLED_WIDTH * OLED_HEIGHT / 8];
+#endif
 
-extern void FirmwareDelay(uint32_t Cnt); 
+extern void FirmwareDelay(uint32_t Cnt);
 
 //--------------------------------------------------------------------------------------------------
 // I2C Low-Level Communication Functions for OLED
@@ -422,10 +427,7 @@ void OLED_DrawPixel(uint8_t x, uint8_t y, uint8_t color)
     #else
     // Direct drawing not implemented efficiently without buffer
     // Could read-modify-write, but that's slow over I2C
-    #endif
+#endif
 }
 
-#ifdef OLED_USE_BUFFER
-// Define the screen buffer if used
-uint8_t OLED_GRAM[OLED_WIDTH * OLED_HEIGHT / 8];
-#endif
+// Original buffer definition location removed

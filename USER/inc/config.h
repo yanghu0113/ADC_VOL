@@ -53,6 +53,6 @@
 // Feature Flags
 //-----------------------------------------------------------------------------
 
-// #define OLED_USE_BUFFER // Uncomment if using a screen buffer in oled_driver
+#define OLED_USE_BUFFER // Uncomment if using a screen buffer in oled_driver
 
 #endif // __CONFIG_H
