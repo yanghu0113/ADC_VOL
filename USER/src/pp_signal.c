@@ -43,23 +43,47 @@ void PP_Signal_Init(void)
  */
 uint16_t PP_GetCableCapacity(void)
 {
-    // --- SIMULATION ---
-    // In a real implementation:
-    // 1. Read ADC value for PP_ADC_CHANNEL
-    //    uint16_t adc_raw = ADC_Read_Channel(PP_ADC_CHANNEL); // Assuming such a function exists
-    // 2. Convert raw ADC value to voltage.
-    //    float pp_voltage = convert_adc_to_pp_voltage(adc_raw);
-    // 3. Calculate resistance based on the voltage divider circuit used (e.g., R_pp = R_known * pp_voltage / (V_source - pp_voltage)).
-    //    float pp_resistance = calculate_pp_resistance(pp_voltage);
-    // 4. Compare resistance to standard thresholds (allow for tolerance):
-    //    if (pp_resistance > 1200 && pp_resistance < 1800) return PP_CAPACITY_13A; // ~1500 Ohm
-    //    else if (pp_resistance > 500 && pp_resistance < 800) return PP_CAPACITY_20A; // ~680 Ohm
-    //    else if (pp_resistance > 150 && pp_resistance < 300) return PP_CAPACITY_32A; // ~220 Ohm
-    //    else if (pp_resistance > 70 && pp_resistance < 130) return PP_CAPACITY_63A; // ~100 Ohm
-    //    else return PP_CAPACITY_UNKNOWN;
+    // --- Real ADC Reading ---
+    // Assumes PP connected to PA2 (ADC_ExInputCH2)
+    // Assumes Vref = 3.3V, 12-bit ADC (0-4095)
+    // Assumes 1kOhm pull-up resistor (R_pullup) to 3.3V. Cable provides R_pp to GND.
+    // ADC_Voltage = 3.3V * R_pp / (R_pullup + R_pp)
+    // ADC_Voltage_mV = RawValue * 3300 / 4095
+    // R_pp = R_pullup * ADC_Voltage / (3.3V - ADC_Voltage)
+    // R_pp = 1000 * (RawValue * 3300 / 4095) / (3300 - (RawValue * 3300 / 4095))
+    // R_pp = 1000 * RawValue / (4095 - RawValue)
 
-    // --- Placeholder Simulation ---
-    // Return a fixed capacity for testing
-    static uint16_t simulated_capacity = PP_CAPACITY_32A;
-    return simulated_capacity;
+    // Define thresholds based on RAW ADC values (approximate, needs calibration)
+    // R_pp = 1500 (13A) => Raw = 4095 * 1500 / (1000 + 1500) = 2457. Range: 2200 - 2700
+    // R_pp = 680  (20A) => Raw = 4095 * 680 / (1000 + 680) = 1656. Range: 1400 - 1900
+    // R_pp = 220  (32A) => Raw = 4095 * 220 / (1000 + 220) = 738. Range: 500 - 1000
+    // R_pp = 100  (63A) => Raw = 4095 * 100 / (1000 + 100) = 372. Range: 200 - 500
+    // Open circuit (No cable): R_pp = infinity => Raw = 4095. Treat as Unknown/Error?
+    // Short circuit (Error): R_pp = 0 => Raw = 0. Treat as Unknown/Error.
+
+    const uint16_t THRESHOLD_13A_LOW = 2200;
+    const uint16_t THRESHOLD_13A_HIGH = 2700;
+    const uint16_t THRESHOLD_20A_LOW = 1400;
+    const uint16_t THRESHOLD_20A_HIGH = 1900;
+    const uint16_t THRESHOLD_32A_LOW = 500;
+    const uint16_t THRESHOLD_32A_HIGH = 1000;
+    const uint16_t THRESHOLD_63A_LOW = 200;
+    const uint16_t THRESHOLD_63A_HIGH = 500;
+
+    uint16_t adc_raw = ADC_Read_Channel_Raw(ADC_ExInputCH2); // Read PP channel
+
+    // Add simple averaging or filtering here if needed for stability
+
+    if (adc_raw >= THRESHOLD_13A_LOW && adc_raw <= THRESHOLD_13A_HIGH) {
+        return PP_CAPACITY_13A;
+    } else if (adc_raw >= THRESHOLD_20A_LOW && adc_raw <= THRESHOLD_20A_HIGH) {
+        return PP_CAPACITY_20A;
+    } else if (adc_raw >= THRESHOLD_32A_LOW && adc_raw <= THRESHOLD_32A_HIGH) {
+        return PP_CAPACITY_32A;
+    } else if (adc_raw >= THRESHOLD_63A_LOW && adc_raw <= THRESHOLD_63A_HIGH) {
+        return PP_CAPACITY_63A;
+    } else {
+        // Outside known ranges, or very low/high values indicating open/short
+        return PP_CAPACITY_UNKNOWN;
+    }
 }

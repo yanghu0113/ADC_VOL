@@ -168,7 +168,7 @@ void SM_RunStateMachine(void)
         printf("SM: State Change %d -> %d\n", current_state, next_state);
         current_state = next_state;
         // Update UI display based on the new state
-        // UI_UpdateDisplay(); // Call the UI update function
+        UI_UpdateDisplay(); // Call the UI update function
     }
 }
 

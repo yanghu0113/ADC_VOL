@@ -26,8 +26,8 @@ bool ADC_Driver_Init(void)
     RCC_AHBPeriphClk_Enable(RCC_AHB_PERIPH_GPIOA, ENABLE);
     RCC_APBPeriphClk_Enable2(RCC_APB2_PERIPH_ADC, ENABLE);
 
-    /* Configure PA01 as analog input */
-    GPIO_InitStructure.Pins = GPIO_PIN_1;
+    /* Configure PA01 (CP) and PA02 (PP) as analog inputs */
+    GPIO_InitStructure.Pins = GPIO_PIN_1 | GPIO_PIN_2; // Configure both pins
     GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
     GPIO_Init(CW_GPIOA, &GPIO_InitStructure);
 
@@ -55,7 +55,7 @@ bool ADC_Driver_Init(void)
     /* Enable ADC */
     ADC_Enable();
 
-    printf("ADC Driver Initialized (PA01/CH1)\r\n");
+    printf("ADC Driver Initialized (PA01/CH1, PA02/CH2)\r\n"); // Updated message
     return true; // Assuming initialization is always successful for now
 }
 
@@ -129,6 +129,55 @@ uint16_t ADC_Read_Voltage_mV(void)
     // Use integer arithmetic to avoid floating point: (AverageRawValue * RefVoltage_mV) / 4095
     uint32_t voltage = ((uint32_t)averageRawValue * ADC_REFERENCE_VOLTAGE_MV) / 4095;
     return (uint16_t)voltage;
+}
+
+/**
+ * @brief Reads the raw ADC conversion value from a specific channel.
+ * @param channel The ADC channel to read (e.g., ADC_ExInputCH1, ADC_ExInputCH2).
+ * @return Raw 12-bit ADC conversion result, or 0xFFFF on error (e.g., invalid channel).
+ */
+uint16_t ADC_Read_Channel_Raw(ADC_Mux_TypeDef channel)
+{
+    ADC_SingleChTypeDef ADC_SingleChStructure;
+
+    // Basic check for valid external channel range if needed, though type system helps
+    // if (channel > ADC_ExInputCH7) return 0xFFFF; // Example check
+
+    // Ensure ADC is enabled (might be redundant if always enabled, but safe)
+    RCC_APBPeriphClk_Enable2(RCC_APB2_PERIPH_ADC, ENABLE);
+    ADC_Enable();
+
+    // Configure structure for the specific channel reading
+    ADC_SingleChStructure.ADC_InitStruct.ADC_OpMode = ADC_SingleChOneMode;
+    ADC_SingleChStructure.ADC_InitStruct.ADC_ClkDiv = ADC_Clk_Div32;      // Use same settings as Init
+    ADC_SingleChStructure.ADC_InitStruct.ADC_SampleTime = ADC_SampTime5Clk; // Use same settings as Init
+    ADC_SingleChStructure.ADC_InitStruct.ADC_VrefSel = ADC_Vref_VDD;      // Use VDD reference
+    ADC_SingleChStructure.ADC_InitStruct.ADC_InBufEn = ADC_BufDisable;    // Use same settings as Init
+    ADC_SingleChStructure.ADC_InitStruct.ADC_TsEn = ADC_TsDisable;       // Disable Temperature Sensor
+    ADC_SingleChStructure.ADC_InitStruct.ADC_Align = ADC_AlignRight;
+    ADC_SingleChStructure.ADC_InitStruct.ADC_AccEn = ADC_AccDisable;
+
+    ADC_SingleChStructure.ADC_Chmux = channel; // Select the requested channel
+    ADC_SingleChStructure.ADC_DiscardEn = ADC_DiscardNull;
+
+    // Initialize watchdog structure to defaults (disabled)
+    ADC_WdtInit(&ADC_SingleChStructure.ADC_WdtStruct);
+
+    // Apply the configuration
+    ADC_SingleChOneModeCfg(&ADC_SingleChStructure);
+
+    // Start software conversion
+    ADC_SoftwareStartConvCmd(ENABLE);
+
+    // Wait for conversion to complete
+    // Add a timeout mechanism here in a real application to prevent infinite loops
+    while(ADC_GetITStatus(ADC_IT_EOC) == RESET);
+
+    // Clear the End Of Conversion flag
+    ADC_ClearITPendingBit(ADC_IT_EOC);
+
+    // Return the conversion result
+    return ADC_GetConversionValue();
 }
 
 

@@ -33,13 +33,12 @@ int32_t main(void)
     while (!CW_IWDT->SR_f.RUN);  // Wait until the watchdog is running
     IWDT_Refresh();              // Perform an initial refresh immediately after starting
 
+    UI_UpdateDisplay(); // Display initial state
+
     while(1) {
     
         // Run the charging state machine logic
         SM_RunStateMachine();
-
-        // Update the display based on the current state
-        UI_UpdateDisplay();
 
         // Refresh the watchdog
         IWDT_Refresh();

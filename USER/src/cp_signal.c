@@ -113,24 +113,43 @@ void CP_SetMaxCurrentPWM(uint8_t max_current_amps)
  */
 CP_State_t CP_ReadState(void)
 {
-    // --- SIMULATION ---
-    // In a real implementation:
-    // 1. Read ADC value for CP_ADC_CHANNEL
-    //    uint16_t adc_raw = ADC_Read_Channel(CP_ADC_CHANNEL); // Assuming such a function exists
-    // 2. Convert raw ADC value to voltage (e.g., voltage = adc_raw * VREF / ADC_MAX_VALUE * DIVIDER_RATIO)
-    //    float cp_voltage = convert_adc_to_cp_voltage(adc_raw);
-    // 3. Compare voltage to thresholds (these need careful calibration)
-    //    if (cp_voltage > 11.0f) return CP_STATE_A_12V;
-    //    else if (cp_voltage > 8.0f) return CP_STATE_B_9V;
-    //    else if (cp_voltage > 5.0f) return CP_STATE_C_6V;
-    //    else if (cp_voltage > 2.0f) return CP_STATE_D_3V;
-    //    else if (cp_voltage > -1.0f) return CP_STATE_E_0V; // Check 0V range
-    //    else if (cp_voltage < -10.0f) return CP_STATE_F_NEG_12V; // Check -12V range
-    //    else return CP_STATE_UNKNOWN;
+    // --- Real ADC Reading ---
+    // Assumes CP connected to PA1 (ADC_ExInputCH1)
+    // Assumes Vref = 3.3V, 12-bit ADC (0-4095)
+    // Assumes divider: 2.7k to ADC, 1k to GND (ADC voltage = CP_Voltage * 1k / (2.7k + 1k))
+    // CP_Voltage = ADC_Voltage * 3.7
+    // ADC_Voltage = RawValue * 3300 / 4095 mV
+    // CP_Voltage_mV = RawValue * 3300 / 4095 * 3.7 = RawValue * 12210 / 4095 ~= RawValue * 2.98
 
-    // --- Placeholder Simulation ---
-    // Cycle through states for testing without hardware
-    static CP_State_t simulated_state = CP_STATE_A_12V;
-    // simulated_state = get_next_simulated_state(simulated_state); // Logic to change state
-    return simulated_state; // Return the current simulated state
+    // Define thresholds based on RAW ADC values (approximate, needs calibration)
+    // State A (+12V): CP_mV > ~10500mV => Raw > ~3520? Let's use 3600 for margin.
+    // State B (+9V):  CP_mV ~ 9000mV => Raw ~ 3020. Range: 2600 - 3600
+    // State C (+6V):  CP_mV ~ 6000mV => Raw ~ 2013. Range: 1600 - 2600
+    // State D (+3V):  CP_mV ~ 3000mV => Raw ~ 1006. Range: 600 - 1600
+    // State E (0V):   CP_mV ~ 0V => Raw ~ 0. Range: < 600
+    // State F (-12V): CP_mV ~ -12000mV (Clamped by diode to ~0V) => Raw ~ 0. Range: < 600
+
+    const uint16_t THRESHOLD_A_MIN = 3600; // Min raw value for State A
+    const uint16_t THRESHOLD_B_MIN = 2600; // Min raw value for State B
+    const uint16_t THRESHOLD_C_MIN = 1600; // Min raw value for State C
+    const uint16_t THRESHOLD_D_MIN = 600;  // Min raw value for State D
+
+    uint16_t adc_raw = ADC_Read_Channel_Raw(ADC_ExInputCH1); // Read CP channel
+
+    // Add simple averaging or filtering here if needed for stability
+
+    if (adc_raw >= THRESHOLD_A_MIN) {
+        return CP_STATE_A_12V;
+    } else if (adc_raw >= THRESHOLD_B_MIN) {
+        return CP_STATE_B_9V;
+    } else if (adc_raw >= THRESHOLD_C_MIN) {
+        return CP_STATE_C_6V;
+    } else if (adc_raw >= THRESHOLD_D_MIN) {
+        return CP_STATE_D_3V;
+    } else {
+        // Treat values below D threshold as E or F (Fault)
+        // Distinguishing E (0V) from F (-12V clamped) might require specific circuit checks
+        // For now, group them as a fault condition.
+        return CP_STATE_E_0V; // Or return a specific FAULT state if defined differently
+    }
 }
