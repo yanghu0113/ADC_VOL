@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include "system_cw32f003.h" // Include for SystemCoreClock variable
 #include "cw32f003_iwdt.h"   // Include IWDT header
+#include "cw32f003_systick.h" // Include SysTick header
 
 // Include new charging gun modules
 #include "charging_sm.h"
@@ -45,7 +46,8 @@ int32_t main(void)
 
         // Add a small delay to prevent excessive polling/CPU usage
         // Adjust as needed for responsiveness vs power consumption
-        FirmwareDelay(100000); // Approx 2ms delay at 48MHz
+        // FirmwareDelay(100000); // Approx 2ms delay at 48MHz - Replaced with SysTickDelay
+        SysTickDelay(2); // Delay for 2ms using SysTick
     }
 }
 
@@ -101,6 +103,10 @@ static bool System_Init(void)
     // IWDT_Cmd();                  // Start the watchdog counter - MOVED TO main()
     // while (!CW_IWDT->SR_f.RUN);  // Wait until the watchdog is running - MOVED TO main()
     // IWDT_Refresh();              // Perform an initial refresh immediately after starting - MOVED TO main()
+
+    /* 初始化SysTick (1ms tick) */
+    InitTick(SystemCoreClock); // Configure SysTick for 1ms interrupts
+    printf("SysTick Initialized (1ms tick)\r\n");
 
     /* 初始化成功 */
     printf("\r\nCW32F003 Drivers Initialized Successfully\r\n");

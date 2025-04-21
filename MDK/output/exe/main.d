@@ -23,5 +23,6 @@
 .\output\exe\main.o: ..\USER\inc\oled_driver.h
 .\output\exe\main.o: ..\USER\inc\adc_driver.h
 .\output\exe\main.o: ..\Libraries\inc\cw32f003_iwdt.h
+.\output\exe\main.o: ..\Libraries\inc\cw32f003_systick.h
 .\output\exe\main.o: ..\USER\inc\charging_sm.h
 .\output\exe\main.o: ..\USER\inc\ui_display.h

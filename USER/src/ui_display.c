@@ -63,7 +63,6 @@ void UI_UpdateDisplay(void)
     // Draw directly to buffer (or screen if buffer disabled)
     OLED_ShowString(0, 1, state_str, 6);
     OLED_ShowString(0, 2, current_str, 6);
-        OLED_ShowString(0, 3, current_str, 6);
 
 
     // Add other info (Voltage, Temperature from main.c?) to other lines if desired

@@ -18,6 +18,7 @@
 #include "../inc/main.h"
 #include "../inc/interrupts_cw32f003.h"
 #include "../inc/uart_driver.h" // Include UART driver header
+#include "cw32f003_systick.h"   // Include SysTick header
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -111,7 +112,9 @@ void PendSV_Handler(void)
 
 void SysTick_Handler(void)
 {
-  
+  /* USER CODE BEGIN SysTick_IRQn */
+  uwTick++; // Increment the system tick counter
+  /* USER CODE END SysTick_IRQn */
 }
 
 /******************************************************************************/
