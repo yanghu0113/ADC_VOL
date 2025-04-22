@@ -136,7 +136,7 @@ uint16_t ADC_Read_Voltage_mV(void)
  * @param channel The ADC channel to read (e.g., ADC_ExInputCH1, ADC_ExInputCH2).
  * @return Raw 12-bit ADC conversion result, or 0xFFFF on error (e.g., invalid channel).
  */
-uint16_t ADC_Read_Channel_Raw(ADC_Mux_TypeDef channel)
+uint16_t ADC_Read_Channel_Raw(uint32_t channel) // Use uint32_t for channel
 {
     ADC_SingleChTypeDef ADC_SingleChStructure;
 

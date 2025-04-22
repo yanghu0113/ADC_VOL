@@ -9,6 +9,8 @@ extern "C" {
 #include "base_types.h" // For bool type if needed, or include stdint.h/stdbool.h directly
 #include <stdint.h>    // For uint16_t
 #include <stdbool.h>   // For bool
+// #include "cw32f003.h"     // Remove - Not needed here
+// #include "cw32f003_adc.h" // Remove - Not needed here, type is uint32_t
 
 /* Defines -------------------------------------------------------------------*/
 // Define the reference voltage used for calculation (e.g., 3.3V)
@@ -50,7 +52,7 @@ float ADC_Read_Internal_Temperature(void);
  * @param channel The ADC channel to read (e.g., ADC_ExInputCH1, ADC_ExInputCH2).
  * @return Raw 12-bit ADC conversion result, or 0xFFFF on error (e.g., invalid channel).
  */
-uint16_t ADC_Read_Channel_Raw(ADC_Mux_TypeDef channel);
+uint16_t ADC_Read_Channel_Raw(uint32_t channel); // Use uint32_t for channel
 
 
 #ifdef __cplusplus

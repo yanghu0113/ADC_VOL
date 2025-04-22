@@ -14,5 +14,6 @@
 .\output\exe\pp_signal.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h
 .\output\exe\pp_signal.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armcc.h
 .\output\exe\pp_signal.o: ..\Libraries\inc\system_cw32f003.h
+.\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_adc.h
 .\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_gpio.h

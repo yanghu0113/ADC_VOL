@@ -1,6 +1,7 @@
 #include "pp_signal.h"
 #include "adc_driver.h" // Assumes adc_driver handles ADC reading
 #include "config.h"     // For pin/peripheral definitions
+#include "cw32f003_adc.h" // Include ADC peripheral header for channel constants
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
 

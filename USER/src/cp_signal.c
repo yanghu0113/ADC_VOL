@@ -2,6 +2,7 @@
 #include "pwm_driver.h" // Assumes pwm_driver handles PWM generation - Ensure this is included
 #include "adc_driver.h" // Assumes adc_driver handles ADC reading
 #include "config.h"     // For pin/peripheral definitions
+#include "cw32f003_adc.h" // Include ADC peripheral header for channel constants
 // #include "pwm_driver.h" // Remove duplicate include
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"

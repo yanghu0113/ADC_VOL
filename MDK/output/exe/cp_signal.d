@@ -15,6 +15,7 @@
 .\output\exe\cp_signal.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\output\exe\cp_signal.o: ..\USER\inc\adc_driver.h
 .\output\exe\cp_signal.o: ..\USER\inc\config.h
+.\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_adc.h
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_gpio.h
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_atim.h
