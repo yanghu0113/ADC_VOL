@@ -41,11 +41,23 @@
 #define DEBUG_USART_TX_AF_FUNC() PB02_AFx_UART1TXD() // Reverted to original AF macro
 #define DEBUG_USART_RX_AF_FUNC() PA00_AFx_UART1RXD() // Reverted to original AF macro
 
+// UART for HLW8032 Communication
+#define HLW_USART_PERIPH        CW_UART2
+#define HLW_USART_CLK_ENABLE()  __RCC_UART2_CLK_ENABLE()
+#define HLW_USART_IRQn          UART2_IRQn
+#define HLW_USART_GPIO_PORT     CW_GPIOC
+#define HLW_USART_GPIO_CLK_ENABLE() __RCC_GPIOC_CLK_ENABLE()
+#define HLW_USART_RX_PIN        GPIO_PIN_0 // PC0 for UART2_RX (Verify AF mapping)
+#define HLW_USART_TX_PIN        GPIO_PIN_1 // PC1 for UART2_TX (Verify AF mapping, assign even if unused)
+#define HLW_USART_RX_AF_FUNC()  PC00_AFx_UART2RXD() // Verify this macro exists and is correct
+#define HLW_USART_TX_AF_FUNC()  PC01_AFx_UART2TXD() // Verify this macro exists and is correct
+
 //-----------------------------------------------------------------------------
 // Peripheral Configuration Defaults
 //-----------------------------------------------------------------------------
 
 #define DEBUG_UART_BAUDRATE     9600
+#define HLW_UART_BAUDRATE       4800 // Baud rate for HLW8032
 #define INITIAL_PWM_FREQ_HZ     1000
 #define INITIAL_PWM_DUTY_PERCENT 50
 

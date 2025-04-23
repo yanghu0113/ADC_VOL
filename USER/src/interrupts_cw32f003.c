@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "../inc/cw32f003_atim.h"
+#include "../inc/hlw_uart_driver.h" // Include the HLW UART driver header
 /* USER CODE END Includes */
 
 
@@ -359,9 +360,13 @@ void UART1_IRQHandler(void)
  */
 void UART2_IRQHandler(void)
 {
-  /* USER CODE BEGIN */
+  /* USER CODE BEGIN UART2_IRQn */
 
-  /* USER CODE END */
+  // Check for Receive Complete interrupt and call handler
+  // Note: The handler itself checks the flag again and clears it.
+  HLW_UART_Handle_RC();
+
+  /* USER CODE END UART2_IRQn */
 }
 
 

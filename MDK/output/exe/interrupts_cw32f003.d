@@ -20,3 +20,4 @@
 .\output\exe\interrupts_cw32f003.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\output\exe\interrupts_cw32f003.o: ..\Libraries\inc\cw32f003_systick.h
 .\output\exe\interrupts_cw32f003.o: ..\Libraries\inc\../inc/cw32f003_atim.h
+.\output\exe\interrupts_cw32f003.o: ..\USER\src\../inc/hlw_uart_driver.h

@@ -12,6 +12,7 @@
 // Include new charging gun modules
 #include "charging_sm.h"
 #include "ui_display.h"
+#include "ac_measurement.h" // Include AC measurement header
 
 static bool System_Init(void);
 static void Error_Handler(void);
@@ -19,7 +20,8 @@ static void Error_Handler(void);
 // --- Global Task Flags (set by SysTick_Handler) ---
 volatile bool flag_run_state_machine = false; // Set every 10ms
 volatile bool flag_update_display = false;    // Set every 100ms
-// Add other flags here as needed (e.g., for AC sampling)
+extern volatile bool hlw8032_packet_ready;    // Flag defined in ac_measurement.c
+// Add other flags here as needed
 
 
 int32_t main(void)
@@ -29,9 +31,10 @@ int32_t main(void)
         Error_Handler();
     }
 
-    // Initialize the Charging State Machine and UI
+    // Initialize the Charging State Machine, UI, and AC Measurement
     SM_Init();
-    UI_Display_Init(); // Initialize the UI display
+    UI_Display_Init();
+    AC_Measurement_Init(); // Initialize HLW8032 communication
 
     // Start Watchdog *after* all initialization is complete
     IWDT_Cmd();                  // Start the watchdog counter
@@ -58,6 +61,13 @@ int32_t main(void)
             // For now, let's keep the update within SM_RunStateMachine on state change,
             // but this flag could be used for other periodic UI updates (e.g., blinking icons).
             // UI_UpdateDisplay(); // Example: Call here for periodic updates
+        }
+
+        // Process HLW8032 Packet when ready
+        if (hlw8032_packet_ready) {
+            // Flag is cleared within AC_Process_HLW8032_Packet after processing
+             AC_Process_HLW8032_Packet();
+             // Note: AC_Process_HLW8032_Packet clears the flag itself
         }
 
         // Add checks for other flags here...

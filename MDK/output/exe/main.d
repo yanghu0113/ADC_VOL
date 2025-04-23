@@ -26,3 +26,4 @@
 .\output\exe\main.o: ..\Libraries\inc\cw32f003_systick.h
 .\output\exe\main.o: ..\USER\inc\charging_sm.h
 .\output\exe\main.o: ..\USER\inc\ui_display.h
+.\output\exe\main.o: ..\USER\inc\ac_measurement.h

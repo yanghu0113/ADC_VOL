@@ -12,6 +12,7 @@
 ".\output\exe\cp_signal.o"
 ".\output\exe\pp_signal.o"
 ".\output\exe\ui_display.o"
+".\output\exe\hlw_uart_driver.o"
 ".\output\exe\cw32f003_adc.o"
 ".\output\exe\cw32f003_atim.o"
 ".\output\exe\cw32f003_awt.o"

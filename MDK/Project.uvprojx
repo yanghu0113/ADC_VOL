@@ -455,6 +455,11 @@
               <FileType>1</FileType>
               <FilePath>..\USER\src\ui_display.c</FilePath>
             </File>
+            <File>
+              <FileName>hlw_uart_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\hlw_uart_driver.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
