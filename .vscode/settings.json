@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "oled_driver.h": "c"
-    }
+        "oled_driver.h": "c",
+        "cw32f003_iwdt.h": "c",
+        "ac_measurement.h": "c",
+        "charging_sm.h": "c"
+    },
+    "C_Cpp.autocomplete": "disabled"
 }

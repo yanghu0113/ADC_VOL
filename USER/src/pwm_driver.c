@@ -7,7 +7,7 @@
 // Store configuration for getter functions
 static uint32_t pwm_frequency = 0;
 static uint8_t pwm_duty_cycle = 0;
-// Unused variable removed
+
 
 /**
  * @brief Initializes ATIM for PWM output.

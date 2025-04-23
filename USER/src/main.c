@@ -16,6 +16,11 @@
 static bool System_Init(void);
 static void Error_Handler(void);
 
+// --- Global Task Flags (set by SysTick_Handler) ---
+volatile bool flag_run_state_machine = false; // Set every 10ms
+volatile bool flag_update_display = false;    // Set every 100ms
+// Add other flags here as needed (e.g., for AC sampling)
+
 
 int32_t main(void)
 {
@@ -37,16 +42,37 @@ int32_t main(void)
 
     while(1) {
     
-        // Run the charging state machine logic
-        SM_RunStateMachine();
+        // --- Time-Sliced Tasks ---
 
-        // Refresh the watchdog
+        // Run State Machine (every 10ms approx)
+        if (flag_run_state_machine) {
+            flag_run_state_machine = false; // Clear flag
+            SM_RunStateMachine();
+        }
+
+        // Update Display (every 100ms approx)
+        if (flag_update_display) {
+            flag_update_display = false; // Clear flag
+            // Decide if UI_UpdateDisplay() should be called here periodically,
+            // or only when state actually changes (as currently done in SM_RunStateMachine).
+            // For now, let's keep the update within SM_RunStateMachine on state change,
+            // but this flag could be used for other periodic UI updates (e.g., blinking icons).
+            // UI_UpdateDisplay(); // Example: Call here for periodic updates
+        }
+
+        // Add checks for other flags here...
+
+
+        // --- Background Tasks ---
+
+        // Refresh the watchdog periodically
+        // Consider moving this into a timed task if precise timing is needed,
+        // but refreshing it frequently in the main loop is usually safe.
         IWDT_Refresh();
 
-        // Add a small delay to prevent excessive polling/CPU usage
-        // Adjust as needed for responsiveness vs power consumption
-        // FirmwareDelay(100000); // Approx 2ms delay at 48MHz - Replaced with SysTickDelay
-        SysTickDelay(2); // Delay for 2ms using SysTick
+        // Optional: Enter low-power sleep mode if no flags are pending
+        // __WFI(); // Example: Wait For Interrupt instruction
+
     }
 }
 
@@ -58,27 +84,23 @@ static bool System_Init(void)
 {
     bool status = true;
     
-    /* 初始化OLED显示屏 */
     if (!OLED_Init()) {
         status = false;
-        return status; /* 提前返回，因为OLED无法显示欢迎信息 */
+        return status; 
     }
     
-    /* 初始化UART通信 */
     if (!UART_Driver_Init(DEBUG_UART_BAUDRATE)) {
         status = false;
         return status; 
     }
     
-    /* 初始化PWM */
     if (!PWM_Driver_Init(INITIAL_PWM_FREQ_HZ, INITIAL_PWM_DUTY_PERCENT)) {
         printf("Error: PWM Init Failed!\r\n");
         status = false;
         return status;
     }
 
-    /* 初始化ADC (using the new driver) */
-    if (!ADC_Driver_Init()) { // Call the driver's init function
+    if (!ADC_Driver_Init()) { 
         printf("Error: ADC Driver Init Failed!\r\n");
         status = false;
         return status;

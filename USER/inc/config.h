@@ -49,6 +49,17 @@
 #define INITIAL_PWM_FREQ_HZ     1000
 #define INITIAL_PWM_DUTY_PERCENT 50
 
+
+// Define which peripherals/pins are used 
+#define CP_PWM_TIMER            CW_ATIM // Use ATIM as defined in config.h
+#define CP_PWM_FREQ_HZ          1000    // 1 kHz for Control Pilot
+#define CP_PWM_GPIO_PORT        CW_GPIOA // Use GPIOA as defined in config.h
+#define CP_PWM_GPIO_PIN         GPIO_PIN_6 // Use PA06 as defined in config.h for PWM
+
+#define CP_ADC_CHANNEL          ADC_ExInputCH1 // Use library constant for Channel 1 (PA1)
+#define CP_ADC_GPIO_PORT        CW_GPIOA
+#define CP_ADC_GPIO_PIN         GPIO_PIN_1 // Example: PA1 for ADC Channel 1
+
 //-----------------------------------------------------------------------------
 // Feature Flags
 //-----------------------------------------------------------------------------

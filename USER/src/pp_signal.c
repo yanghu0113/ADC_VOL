@@ -6,9 +6,10 @@
 #include "cw32f003_gpio.h"
 
 // Define which peripherals/pins are used (Update these in config.h later)
-#define PP_ADC_CHANNEL          ADC_CHANNEL_2 // Example: Use ADC Channel 2 (PA2)
+// Note: ADC_ExInputCH2 corresponds to PA04 according to cw32f003_adc.h
+#define PP_ADC_CHANNEL          ADC_ExInputCH2 // Use the library constant directly
 #define PP_ADC_GPIO_PORT        CW_GPIOA
-#define PP_ADC_GPIO_PIN         GPIO_PIN_2 // Example: PA2 for ADC Channel 2
+#define PP_ADC_GPIO_PIN         GPIO_PIN_4 // PA04 for ADC Channel 2
 
 // --- Initialization ---
 
@@ -45,7 +46,7 @@ void PP_Signal_Init(void)
 uint16_t PP_GetCableCapacity(void)
 {
     // --- Real ADC Reading ---
-    // Assumes PP connected to PA2 (ADC_ExInputCH2)
+    // Assumes PP connected to PA04 (ADC_ExInputCH2)
     // Assumes Vref = 3.3V, 12-bit ADC (0-4095)
     // Assumes 1kOhm pull-up resistor (R_pullup) to 3.3V. Cable provides R_pp to GND.
     // ADC_Voltage = 3.3V * R_pp / (R_pullup + R_pp)
@@ -71,7 +72,7 @@ uint16_t PP_GetCableCapacity(void)
     const uint16_t THRESHOLD_63A_LOW = 200;
     const uint16_t THRESHOLD_63A_HIGH = 500;
 
-    uint16_t adc_raw = ADC_Read_Channel_Raw(ADC_ExInputCH2); // Read PP channel
+    uint16_t adc_raw = ADC_Read_Channel_Raw(PP_ADC_CHANNEL); // Read PP channel using defined constant
 
     // Add simple averaging or filtering here if needed for stability
 

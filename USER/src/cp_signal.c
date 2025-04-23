@@ -1,23 +1,13 @@
 #include "cp_signal.h"
-#include "pwm_driver.h" // Assumes pwm_driver handles PWM generation - Ensure this is included
-#include "adc_driver.h" // Assumes adc_driver handles ADC reading
+#include "pwm_driver.h" 
+#include "adc_driver.h" 
 #include "config.h"     // For pin/peripheral definitions
-#include "cw32f003_adc.h" // Include ADC peripheral header for channel constants
-// #include "pwm_driver.h" // Remove duplicate include
+#include "cw32f003_adc.h" 
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
-#include "cw32f003_atim.h" // Assuming ATIM is used for PWM
+#include "cw32f003_atim.h" 
 
-// Define which peripherals/pins are used (Update these in config.h later)
-#define CP_PWM_TIMER            CW_ATIM // Example: Use Advanced Timer
-#define CP_PWM_FREQ_HZ          1000    // 1 kHz for Control Pilot
-#define CP_PWM_GPIO_PORT        CW_GPIOA
-#define CP_PWM_GPIO_PIN         GPIO_PIN_0 // Example: PA0 for ATIM CH1
-#define CP_PWM_AF_FUNC          GPIO_AFx_ATIMCH1 // Example: Alternate function for PA0
 
-#define CP_ADC_CHANNEL          ADC_CHANNEL_1 // Example: Use ADC Channel 1 (PA1)
-#define CP_ADC_GPIO_PORT        CW_GPIOA
-#define CP_ADC_GPIO_PIN         GPIO_PIN_1 // Example: PA1 for ADC Channel 1
 
 // --- Initialization ---
 
@@ -35,15 +25,8 @@ void CP_Signal_Init(void)
 
     GPIO_InitStruct.Pins = CP_PWM_GPIO_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Push-pull output for PWM
-    // GPIO_InitStruct.Speed = GPIO_SPEED_HIGH; // Speed setting not available in this HAL
-    GPIO_Init(CP_PWM_GPIO_PORT, &GPIO_InitStruct);
 
-    // Set Alternate Function for PA0 to ATIM CH1 (Assuming AF4 - VERIFY THIS in datasheet!)
-    // Using macro style from cw32f003_gpio.h
-    CW_GPIOA->AFRL_f.AFR0 = 4; // Set PA0 to AF4 (ATIM CH1A?) - NEEDS VERIFICATION
-
-    // Initialize PWM Driver (assuming it uses the correct timer - ATIM in this case)
-    // Note: pwm_driver.c might need modification if it's hardcoded to use BTIM/GTIM
+    // Initialize PWM Driver (which uses ATIM and PA06 via config.h)
     // For now, assume it can be initialized with the desired frequency.
     // Initial state is +12V (State A), which corresponds to 100% duty cycle (always high)
     // or potentially a specific non-PWM state depending on hardware design.
@@ -78,26 +61,39 @@ void CP_SetMaxCurrentPWM(uint8_t max_current_amps)
 {
     uint8_t duty_cycle_percent;
 
-    // GB/T Formula (simplified): Duty Cycle % = Amps / 0.6 (for 6A to 51A)
-    // Clamp values according to standard
-    if (max_current_amps < 6) {
-        // Below minimum, potentially indicate error or use lowest duty?
-        // Standard implies PWM stops below 6A threshold? Check standard.
-        // For now, set a low duty cycle (e.g., 10% = 6A)
-         duty_cycle_percent = 10;
-    } else if (max_current_amps <= 51) {
+    // Handle State A (0 Amps) - Set 100% duty cycle for constant +12V
+    if (max_current_amps == 0) {
+        duty_cycle_percent = 100;
+    }
+    // Handle currents below 6A (but not 0A) - Use minimum allowed PWM (e.g., 5% or 10% = 6A)
+    else if (max_current_amps < 6) {
+        // Standard implies PWM stops below 6A threshold? Or use 6A minimum?
+        // Let's use 10% duty cycle (corresponds to 6A) as a minimum signal.
+        duty_cycle_percent = 10;
+    }
+    // Handle 6A to 51A range
+    else if (max_current_amps <= 51) {
+        // Duty Cycle (%) = Amps / 0.6
         duty_cycle_percent = (uint8_t)(((float)max_current_amps / 0.6f) + 0.5f); // Calculate and round
-    } else if (max_current_amps <= 80) {
-         // Different formula for higher currents (check standard)
-         // Placeholder: duty_cycle_percent = some_other_calculation;
-         duty_cycle_percent = 85; // Example placeholder > 51A
-    } else {
-         duty_cycle_percent = 85; // Max duty for >80A? Check standard.
+    }
+    // Handle 51A to 80A range
+    else if (max_current_amps <= 80) {
+        // Duty Cycle (%) = (Amps / 2.5) + 64
+        duty_cycle_percent = (uint8_t)(((float)max_current_amps / 2.5f) + 64.0f + 0.5f); // Calculate and round
+    }
+    // Handle currents above 80A (treat as 80A or specific max duty?)
+    else {
+        // Set duty cycle corresponding to 80A as a maximum practical limit
+        duty_cycle_percent = (uint8_t)(((float)80 / 2.5f) + 64.0f + 0.5f); // Calculate for 80A
     }
 
-    // Clamp duty cycle to valid range (e.g., 5% to 96% might be practical limits)
-    if (duty_cycle_percent < 5) duty_cycle_percent = 5;
-    if (duty_cycle_percent > 96) duty_cycle_percent = 96; // Avoid 0% and 100% if they have special meanings
+    // Clamp duty cycle to practical PWM range (e.g., 5% to 96%) *unless* it's State A (100%)
+    if (duty_cycle_percent != 100) {
+        if (duty_cycle_percent < 5) duty_cycle_percent = 5;
+        if (duty_cycle_percent > 96) duty_cycle_percent = 96;
+    }
+    // Note: A duty cycle of 100% should result in CCR >= ARR+1 in the PWM driver,
+    // effectively creating a constant high output.
 
     // Use the existing PWM driver function
     PWM_Set_DutyCycle(duty_cycle_percent);

@@ -57,6 +57,9 @@
 
 /* External variables --------------------------------------------------------*/
 /* USER CODE BEGIN EV */
+extern volatile bool flag_run_state_machine; // Flag defined in main.c
+extern volatile bool flag_update_display;    // Flag defined in main.c
+// Add extern declarations for other flags if needed
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -113,7 +116,33 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn */
-  uwTick++; // Increment the system tick counter
+  uwTick++; // Increment the system tick counter (used by HAL_Delay, etc.)
+
+  // Task Scheduling Counters (assuming 1ms SysTick interval)
+  static uint32_t counter_10ms = 0;
+  static uint32_t counter_100ms = 0;
+  // Add other counters here
+
+  // --- 10ms Tasks ---
+  counter_10ms++;
+  if (counter_10ms >= 10) // Every 10ms
+  {
+    counter_10ms = 0;
+    flag_run_state_machine = true; // Set flag for state machine execution
+    // Add other 10ms tasks flags here (e.g., button debouncing)
+  }
+
+  // --- 100ms Tasks ---
+  counter_100ms++;
+  if (counter_100ms >= 100) // Every 100ms
+  {
+    counter_100ms = 0;
+    flag_update_display = true; // Set flag for display update
+    // Add other 100ms tasks flags here
+  }
+
+  // Add other interval checks here (e.g., 1ms for AC sampling trigger)
+
   /* USER CODE END SysTick_IRQn */
 }
 

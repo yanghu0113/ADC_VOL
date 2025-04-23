@@ -26,8 +26,9 @@ bool ADC_Driver_Init(void)
     RCC_AHBPeriphClk_Enable(RCC_AHB_PERIPH_GPIOA, ENABLE);
     RCC_APBPeriphClk_Enable2(RCC_APB2_PERIPH_ADC, ENABLE);
 
-    /* Configure PA01 (CP) and PA02 (PP) as analog inputs */
-    GPIO_InitStructure.Pins = GPIO_PIN_1 | GPIO_PIN_2; // Configure both pins
+    /* Configure PA01 (CP) and PA04 (PP/CC) as analog inputs */
+    // PA01 is CH1, PA04 is CH2 according to cw32f003_adc.h
+    GPIO_InitStructure.Pins = GPIO_PIN_1 | GPIO_PIN_4; // Configure PA1 and PA4
     GPIO_InitStructure.Mode = GPIO_MODE_ANALOG;
     GPIO_Init(CW_GPIOA, &GPIO_InitStructure);
 
@@ -55,7 +56,7 @@ bool ADC_Driver_Init(void)
     /* Enable ADC */
     ADC_Enable();
 
-    printf("ADC Driver Initialized (PA01/CH1, PA02/CH2)\r\n"); // Updated message
+    printf("ADC Driver Initialized (PA01/CH1, PA04/CH2)\r\n"); // Updated message
     return true; // Assuming initialization is always successful for now
 }
 
