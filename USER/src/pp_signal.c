@@ -5,11 +5,7 @@
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
 
-// Define which peripherals/pins are used (Update these in config.h later)
-// Note: ADC_ExInputCH2 corresponds to PA04 according to cw32f003_adc.h
-#define PP_ADC_CHANNEL          ADC_ExInputCH2 // Use the library constant directly
-#define PP_ADC_GPIO_PORT        CW_GPIOA
-#define PP_ADC_GPIO_PIN         GPIO_PIN_4 // PA04 for ADC Channel 2
+
 
 // --- Initialization ---
 

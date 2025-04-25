@@ -8,16 +8,7 @@
 // Hardware Pin Assignments & Peripheral Choices
 //-----------------------------------------------------------------------------
 
-// I2C for OLED Display
-#define OLED_I2C_PERIPH         CW_I2C
-#define OLED_I2C_CLK_ENABLE()   __RCC_I2C_CLK_ENABLE()
-#define OLED_I2C_GPIO_PORT      CW_GPIOB
-#define OLED_I2C_GPIO_CLK_ENABLE() __RCC_GPIOB_CLK_ENABLE()
-#define OLED_I2C_SCL_PIN        GPIO_PIN_4
-#define OLED_I2C_SDA_PIN        GPIO_PIN_3
-#define OLED_I2C_SCL_AF_FUNC()  PB04_AFx_I2CSCL()
-#define OLED_I2C_SDA_AF_FUNC()  PB03_AFx_I2CSDA()
-#define OLED_I2C_ADDRESS        0x78 // Or 0x7A depending on SA0 pin
+
 
 // PWM Output
 #define PWM_TIMER_PERIPH        CW_ATIM
@@ -52,6 +43,7 @@
 #define HLW_USART_RX_AF_FUNC()  PC00_AFx_UART2RXD() // Verify this macro exists and is correct
 #define HLW_USART_TX_AF_FUNC()  PC01_AFx_UART2TXD() // Verify this macro exists and is correct
 
+
 //-----------------------------------------------------------------------------
 // Peripheral Configuration Defaults
 //-----------------------------------------------------------------------------
@@ -72,10 +64,12 @@
 #define CP_ADC_GPIO_PORT        CW_GPIOA
 #define CP_ADC_GPIO_PIN         GPIO_PIN_1 // Example: PA1 for ADC Channel 1
 
-//-----------------------------------------------------------------------------
-// Feature Flags
-//-----------------------------------------------------------------------------
+// Define which peripherals/pins are used 
+// Note: ADC_ExInputCH2 corresponds to PA04 according to cw32f003_adc.h
+#define PP_ADC_CHANNEL          ADC_ExInputCH2 // Use the library constant directly
+#define PP_ADC_GPIO_PORT        CW_GPIOA
+#define PP_ADC_GPIO_PIN         GPIO_PIN_4 // PA04 for ADC Channel 2
 
-#define OLED_USE_BUFFER // Uncomment if using a screen buffer in oled_driver
+
 
 #endif // __CONFIG_H

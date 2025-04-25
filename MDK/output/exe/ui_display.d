@@ -1,7 +1,7 @@
 .\output\exe\ui_display.o: ..\USER\src\ui_display.c
 .\output\exe\ui_display.o: ..\USER\inc\ui_display.h
 .\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\output\exe\ui_display.o: ..\USER\inc\oled_driver.h
+.\output\exe\ui_display.o: ..\USER\inc\spi_oled_driver.h
 .\output\exe\ui_display.o: ..\Libraries\inc\cw32f003.h
 .\output\exe\ui_display.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h
 .\output\exe\ui_display.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h

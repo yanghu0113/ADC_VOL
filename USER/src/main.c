@@ -13,6 +13,7 @@
 #include "charging_sm.h"
 #include "ui_display.h"
 #include "ac_measurement.h" // Include AC measurement header
+#include "spi_oled_driver.h" // Include new SPI OLED driver header
 
 static bool System_Init(void);
 static void Error_Handler(void);
@@ -31,10 +32,11 @@ int32_t main(void)
         Error_Handler();
     }
 
-    // Initialize the Charging State Machine, UI, and AC Measurement
+    // Initialize the Charging State Machine, UI, AC Measurement, and OLED
     SM_Init();
-    UI_Display_Init();
+    UI_Display_Init();     
     AC_Measurement_Init(); // Initialize HLW8032 communication
+    OLED_Init();       
 
     // Start Watchdog *after* all initialization is complete
     IWDT_Cmd();                  // Start the watchdog counter
@@ -94,10 +96,11 @@ static bool System_Init(void)
 {
     bool status = true;
     
-    if (!OLED_Init()) {
-        status = false;
-        return status; 
-    }
+    //Initialize the correct OLED driver (SPI version)
+     if (!OLED_Init()) { // Remove call to old I2C init
+         status = false;
+         return status; 
+     }
     
     if (!UART_Driver_Init(DEBUG_UART_BAUDRATE)) {
         status = false;

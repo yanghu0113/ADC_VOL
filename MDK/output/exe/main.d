@@ -27,3 +27,4 @@
 .\output\exe\main.o: ..\USER\inc\charging_sm.h
 .\output\exe\main.o: ..\USER\inc\ui_display.h
 .\output\exe\main.o: ..\USER\inc\ac_measurement.h
+.\output\exe\main.o: ..\USER\inc\spi_oled_driver.h

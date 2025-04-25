@@ -6,7 +6,7 @@
 #include <stdbool.h> // Include for bool type
 
 // Function prototypes
-bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent); // Changed return type to bool
+bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent); 
 void PWM_Start(void); // Added prototype
 void PWM_Stop(void);  // Added prototype 
 bool PWM_Set_Frequency(uint32_t freqHz); // Added prototype 

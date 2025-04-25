@@ -411,16 +411,6 @@
               <FilePath>..\USER\src\pwm_driver.c</FilePath>
             </File>
             <File>
-              <FileName>oled_driver.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\USER\inc\oled_driver.h</FilePath>
-            </File>
-            <File>
-              <FileName>oled_driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\USER\src\oled_driver.c</FilePath>
-            </File>
-            <File>
               <FileName>adc_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\USER\src\adc_driver.c</FilePath>
@@ -459,6 +449,11 @@
               <FileName>hlw_uart_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\USER\src\hlw_uart_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi_oled_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\spi_oled_driver.c</FilePath>
             </File>
           </Files>
         </Group>

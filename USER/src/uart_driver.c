@@ -108,7 +108,7 @@ bool UART_Driver_Init(uint32_t baudRate) // Changed return type to bool
     RingBuffer_Init(&rx_buffer);
 
     // Enable peripheral clocks using macros from config.h
-    RCC_HSI_Enable(RCC_HSIOSC_DIV6); // Keep HSI config here for now
+    // RCC_HSI_Enable(RCC_HSIOSC_DIV6); // REMOVED: System clock should be set in SystemInit, not here.
     DEBUG_USART_GPIO_CLK_ENABLE(); // Enable GPIO clock(s)
     DEBUG_USART_CLK_ENABLE();      // Enable UART peripheral clock
 

@@ -32,7 +32,7 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
         return false; // Return failure
     }
     // Enable clocks using macros from config.h
-    RCC_HSI_Enable(RCC_HSIOSC_DIV6); // Keep HSI config here for now
+    RCC_HSI_Enable(RCC_HSIOSC_DIV1); // Keep HSI config here for now
     PWM_TIMER_CLK_ENABLE();
     PWM_GPIO_CLK_ENABLE();
     // GPIOB clock enable was unnecessary for PA06 PWM output
@@ -99,7 +99,7 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     ATIM_InitStruct.RepetitionCounter = 0;
     ATIM_InitStruct.UnderFlowMask = DISABLE;
     ATIM_InitStruct.OverFlowMask = DISABLE;
-    ATIM_Init(&ATIM_InitStruct); // Removed incorrect PWM_TIMER_PERIPH argument
+    ATIM_Init(&ATIM_InitStruct); 
 
     // Configure Output Compare (Channel 2B for PA06)
     ATIM_OCInitStruct.BufferState = ENABLE;
@@ -115,10 +115,10 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
 
     // Timer Interrupts are not enabled
     // ATIM_ITConfig(PWM_TIMER_PERIPH, ATIM_CR_IT_OVE, ENABLE);
-    // ATIM_CH2Config(PWM_TIMER_PERIPH, ATIM_CHxB_CIE, ENABLE); // Interrupts disabled anyway
+    // ATIM_CH2Config(PWM_TIMER_PERIPH, ATIM_CHxB_CIE, ENABLE); 
 
     // Enable PWM Output
-    ATIM_CtrlPWMOutputs(ENABLE); // Removed incorrect PWM_TIMER_PERIPH argument
+    ATIM_CtrlPWMOutputs(ENABLE); 
 
     // Store values
     pwm_frequency = freqHz;

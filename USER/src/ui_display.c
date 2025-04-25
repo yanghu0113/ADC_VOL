@@ -1,7 +1,7 @@
 #include "ui_display.h"
-#include "oled_driver.h"    // For OLED functions
-#include "charging_sm.h"    // To get current state
-#include "ac_measurement.h" // To get current reading
+#include "spi_oled_driver.h" // Use SPI OLED driver
+#include "charging_sm.h"     // To get current state
+#include "ac_measurement.h"  // To get current reading
 #include <stdio.h>          // For sprintf
 #include <string.h>         // For memset
 
@@ -13,9 +13,9 @@
  */
 void UI_Display_Init(void)
 {
-    // OLED_Init() is assumed to be called in System_Init
+    // SPI_OLED_Init() is assumed to be called in System_Init
     // Add any specific UI initialization here if needed
-    OLED_Clear(); // Start with a clear screen
+    OLED_Clear(); // Start with a clear screen using SPI driver
 }
 
 // --- Display Update ---
@@ -59,18 +59,18 @@ void UI_UpdateDisplay(void)
         strcat(current_str, "0.0 A");
     }
 
-    // Update OLED (Example layout: State on line 1, Current on line 2)
-    // Draw directly to buffer (or screen if buffer disabled)
-    OLED_ShowString(0, 1, state_str, 6);
-    OLED_ShowString(0, 2, current_str, 6);
-    
+    // Update SPI OLED (Example layout: State on line 1, Current on line 2)
+    // Clear screen before drawing new content (if not using buffer or buffer clear)
+    // SPI_OLED_Clear(); // Optional: Clear full screen each update if needed
+   OLED_ShowString(0, 1, state_str, 6); // Use SPI function
+    OLED_ShowString(0, 2, current_str, 6); // Use SPI function
 
 
     // Add other info (Voltage, Temperature from main.c?) to other lines if desired
     // Example: Keep Voltage/Temp from main.c on lines 3 & 4
 
     // Update the physical screen from the buffer if enabled
-    #ifdef OLED_USE_BUFFER
-    OLED_UpdateScreen();
+    #ifdef SPI_OLED_USE_BUFFER // Check SPI buffer define if used
+    SPI_OLED_UpdateScreen();
     #endif
 }
