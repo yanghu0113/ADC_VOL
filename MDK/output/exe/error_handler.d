@@ -1,0 +1,16 @@
+.\output\exe\error_handler.o: ..\USER\src\error_handler.c
+.\output\exe\error_handler.o: ..\USER\inc\error_handler.h
+.\output\exe\error_handler.o: ..\USER\inc\error_codes.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\output\exe\error_handler.o: ..\USER\inc\uart_driver.h
+.\output\exe\error_handler.o: ..\Libraries\inc\cw32f003.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armcc.h
+.\output\exe\error_handler.o: ..\Libraries\inc\system_cw32f003.h
+.\output\exe\error_handler.o: ..\Libraries\inc\base_types.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+.\output\exe\error_handler.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

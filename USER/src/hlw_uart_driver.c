@@ -3,6 +3,7 @@
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
 #include "cw32f003_uart.h"
+#include "error_handler.h" // Include the error handler
 #include <stdio.h> // Keep for potential debugging printf inside driver
 #include <stdbool.h>
 #include <string.h>
@@ -171,9 +172,16 @@ bool HLW_UART_DataAvailable(void) {
 void HLW_UART_Handle_RC(void) {
     if (USART_GetFlagStatus(HLW_USART_PERIPH, USART_FLAG_RC) != RESET) { // Use peripheral macro for UART2
         uint8_t data = USART_ReceiveData_8bit(HLW_USART_PERIPH); // Use peripheral macro for UART2
-        // Attempt to put data into buffer. If full, data is lost.
-        HLW_RingBuffer_Put(&hlw_rx_buffer, data);
-        USART_ClearITPendingBit(HLW_USART_PERIPH, USART_IT_RC); // Clear RC flag *after* reading data - Use peripheral macro for UART2
+
+        // Attempt to put data into buffer.
+        if (!HLW_RingBuffer_Put(&hlw_rx_buffer, data)) {
+            // Buffer is full, data is lost. Report the error.
+            // WARNING: Calling complex handlers from ISR can be problematic.
+            // Consider setting a flag for the main loop instead in critical systems.
+            ErrorHandler_Handle(ERROR_BUFFER_FULL, "HLW_UART_ISR", __LINE__);
+        }
+        // Clear RC flag *after* reading data and attempting to store it
+        USART_ClearITPendingBit(HLW_USART_PERIPH, USART_IT_RC); // Use peripheral macro for UART2
     }
     // Check for Overrun Error if necessary and flag definition exists
     // if (USART_GetFlagStatus(HLW_USART_PERIPH, USART_FLAG_OV) != RESET) {

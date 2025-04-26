@@ -1,7 +1,8 @@
 #include "ac_measurement.h"
 #include "hlw_uart_driver.h" // Use the dedicated HLW UART driver
 #include "config.h"          // For HLW_UART_BAUDRATE
-#include <stdio.h>           // For debugging printf
+#include "error_handler.h"   // Include the error handler
+#include <stdio.h>           // For debugging printf (can potentially be removed later)
 #include <string.h>          // For memcpy
 
 // --- Defines ---
@@ -39,9 +40,11 @@ void AC_Measurement_Init(void)
 
     // Initialize UART2 for HLW8032
     if (!HLW_UART_Init(HLW_UART_BAUDRATE)) {
-         printf("Error: HLW8032 UART Init Failed!\r\n");
-         // Handle error appropriately
+         // Report error using the handler
+         ErrorHandler_Handle(ERROR_UART2_INIT_FAILED, "AC_Measure_Init", __LINE__);
+         // Depending on system design, might want to return or signal failure here
     } else {
+         // Keep printf for now, could be removed if handler provides enough info
          printf("HLW8032 UART Initialized.\r\n");
     }
 }
@@ -109,11 +112,14 @@ void AC_Process_HLW8032_Packet(void)
         // printf("HLW Packet OK: V=%.2fV, I=%.3fA, P=%.2fW\n", ac_rms_voltage, ac_rms_current, ac_active_power);
 
     } else {
-        // Checksum error
-        printf("HLW Checksum Error! Recv: 0x%02X, Calc: 0x%02X\n", received_checksum, calculated_checksum);
+        // Checksum error - report via handler
+        ErrorHandler_Handle(ERROR_HLW_CHECKSUM, "AC_ProcessPacket", __LINE__);
         // Optionally clear stored values or keep last known good values
-        // ac_rms_current = 0.0f;
+        // ac_rms_current = 0.0f; // Example: Clear value on error
     }
+
+    // Clear the packet ready flag AFTER processing (or attempting to process)
+    hlw8032_packet_ready = false;
 }
 
 
@@ -157,15 +163,22 @@ float AC_GetPower(void)
  */
 void AC_Store_HLW8032_Byte(uint8_t byte)
 {
+    // This function is likely called from the UART2 ISR context via HLW_UART_Handle_RC
+    // It should be kept very simple.
+
     if (hlw8032_rx_byte_count < HLW8032_PACKET_SIZE) {
         hlw8032_rx_packet_buffer[hlw8032_rx_byte_count++] = byte;
         if (hlw8032_rx_byte_count >= HLW8032_PACKET_SIZE) {
+            // Only set the flag if a full packet is received
             hlw8032_packet_ready = true; // Signal main loop to process
-            hlw8032_rx_byte_count = 0; // Reset for next packet
+            hlw8032_rx_byte_count = 0;   // Reset for next packet
         }
+        // If count < PACKET_SIZE, do nothing, wait for more bytes
     } else {
-        // Buffer overflow or synchronization issue, reset count
+        // Should not happen if logic is correct, but as a safeguard:
+        // Buffer overflow or synchronization issue, reset count.
         hlw8032_rx_byte_count = 0;
-        // Optionally log an error
+        // Consider reporting a framing error?
+        // ErrorHandler_Handle(ERROR_HLW_FRAME, "AC_StoreByte", __LINE__); // Be cautious calling handler from ISR context
     }
 }

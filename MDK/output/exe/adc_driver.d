@@ -15,4 +15,6 @@
 .\output\exe\adc_driver.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\adc_driver.o: ..\Libraries\inc\cw32f003_gpio.h
 .\output\exe\adc_driver.o: ..\Libraries\inc\cw32f003_adc.h
+.\output\exe\adc_driver.o: ..\USER\inc\error_handler.h
+.\output\exe\adc_driver.o: ..\USER\inc\error_codes.h
 .\output\exe\adc_driver.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h

@@ -5,7 +5,9 @@
 #include "cw32f003_adc.h" 
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
-#include "cw32f003_atim.h" 
+#include "cw32f003_atim.h"
+#include "error_handler.h" // Include the error handler
+#include <stdio.h>         // Keep for now, maybe remove later
 
 
 
@@ -32,8 +34,8 @@ void CP_Signal_Init(void)
     // or potentially a specific non-PWM state depending on hardware design.
     // Let's assume 100% duty cycle for now.
     if (!PWM_Driver_Init(CP_PWM_FREQ_HZ, 100)) {
-        // Handle PWM init error if necessary
-        printf("Error: CP PWM Init Failed!\r\n");
+        // Error is already handled by PWM_Driver_Init calling ErrorHandler_Handle
+        // printf("Error: CP PWM Init Failed!\r\n"); // Removed redundant printf
     }
     PWM_Start(); // Start the PWM output
 
@@ -130,11 +132,20 @@ CP_State_t CP_ReadState(void)
     const uint16_t THRESHOLD_B_MIN = 2600; // Min raw value for State B
     const uint16_t THRESHOLD_C_MIN = 1600; // Min raw value for State C
     const uint16_t THRESHOLD_D_MIN = 600;  // Min raw value for State D
+    const uint16_t ADC_ERROR_VALUE = 0xFFFF; // Value returned by ADC_Read_Channel_Raw on timeout
 
     uint16_t adc_raw = ADC_Read_Channel_Raw(ADC_ExInputCH1); // Read CP channel
 
-    // Add simple averaging or filtering here if needed for stability
+    // Check for ADC read error (timeout)
+    if (adc_raw == ADC_ERROR_VALUE) {
+        // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
+        return CP_STATE_FAULT; // Return fault state
+    }
 
+    // Add simple averaging or filtering here if needed for stability
+    // Note: If averaging, check each raw read for ADC_ERROR_VALUE
+
+    // Determine state based on thresholds
     if (adc_raw >= THRESHOLD_A_MIN) {
         return CP_STATE_A_12V;
     } else if (adc_raw >= THRESHOLD_B_MIN) {
@@ -144,9 +155,9 @@ CP_State_t CP_ReadState(void)
     } else if (adc_raw >= THRESHOLD_D_MIN) {
         return CP_STATE_D_3V;
     } else {
-        // Treat values below D threshold as E or F (Fault)
-        // Distinguishing E (0V) from F (-12V clamped) might require specific circuit checks
-        // For now, group them as a fault condition.
-        return CP_STATE_E_0V; // Or return a specific FAULT state if defined differently
+        // Treat values below D threshold as E (0V), F (-12V clamped), or other fault
+        // Report this potentially invalid voltage level
+        ErrorHandler_Handle(ERROR_CP_VOLTAGE_INVALID, "CP_ReadState", __LINE__);
+        return CP_STATE_FAULT; // Return general fault state
     }
 }

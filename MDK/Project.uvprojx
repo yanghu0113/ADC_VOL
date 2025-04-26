@@ -455,6 +455,11 @@
               <FileType>1</FileType>
               <FilePath>..\USER\src\spi_oled_driver.c</FilePath>
             </File>
+            <File>
+              <FileName>error_handler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\USER\src\error_handler.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

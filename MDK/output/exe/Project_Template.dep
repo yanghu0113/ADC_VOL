@@ -1,6 +1,6 @@
 Dependencies for Project 'Project', Target 'Template': (DO NOT MODIFY !)
 F (..\startup_cw32f003.s)(0x6260CE10)(--cpu Cortex-M0+ -g --apcs=interwork --pd "__MICROLIB SETA 1"-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include--pd "__UVISION_VERSION SETA 524" --pd "_RTE_ SETA 1"-o .\output\exe\startup_cw32f003.o --depend .\output\exe\startup_cw32f003.d)
-F (..\USER\src\main.c)(0x680AD0AB)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\main.o --omf_browse .\output\exe\main.crf --depend .\output\exe\main.d)
+F (..\USER\src\main.c)(0x680B1056)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\main.o --omf_browse .\output\exe\main.crf --depend .\output\exe\main.d)
 I (..\USER\inc\main.h)(0x6801B7CB)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
@@ -22,14 +22,15 @@ I (..\USER\inc\config.h)(0x680A023D)
 I (..\USER\inc\uart_driver.h)(0x680089C7)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
 I (..\USER\inc\pwm_driver.h)(0x680998B9)
-I (..\USER\inc\oled_driver.h)(0x6800896A)
 I (..\USER\inc\adc_driver.h)(0x6805B07C)
 I (..\Libraries\inc\cw32f003_iwdt.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_systick.h)(0x6260CE10)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
 I (..\USER\inc\charging_sm.h)(0x6805C97A)
 I (..\USER\inc\ui_display.h)(0x6803176A)
 I (..\USER\inc\ac_measurement.h)(0x680886B4)
-I (..\USER\inc\spi_oled_driver.h)(0x680AD2FE)
+I (..\USER\inc\spi_oled_driver.h)(0x680C2290)
 F (..\USER\src\interrupts_cw32f003.c)(0x68088676)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\interrupts_cw32f003.o --omf_browse .\output\exe\interrupts_cw32f003.crf --depend .\output\exe\interrupts_cw32f003.d)
 I (..\USER\src\../inc/main.h)(0x6801B7CB)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
@@ -53,7 +54,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
 I (..\Libraries\inc\cw32f003_systick.h)(0x6260CE10)
 I (..\Libraries\inc\../inc/cw32f003_atim.h)(0x6260CE10)
 I (..\USER\src\../inc/hlw_uart_driver.h)(0x68088613)
-F (..\USER\src\uart_driver.c)(0x680AD991)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\uart_driver.o --omf_browse .\output\exe\uart_driver.crf --depend .\output\exe\uart_driver.d)
+F (..\USER\src\uart_driver.c)(0x680B2566)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\uart_driver.o --omf_browse .\output\exe\uart_driver.crf --depend .\output\exe\uart_driver.d)
 I (..\USER\inc\uart_driver.h)(0x680089C7)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)
@@ -71,7 +72,9 @@ I (..\USER\inc\config.h)(0x680A023D)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_uart.h)(0x6260CE10)
-F (..\USER\src\pwm_driver.c)(0x680998B9)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\pwm_driver.o --omf_browse .\output\exe\pwm_driver.crf --depend .\output\exe\pwm_driver.d)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+F (..\USER\src\pwm_driver.c)(0x680B270B)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\pwm_driver.o --omf_browse .\output\exe\pwm_driver.crf --depend .\output\exe\pwm_driver.d)
 I (..\USER\inc\pwm_driver.h)(0x680998B9)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)
@@ -89,7 +92,9 @@ I (..\USER\inc\config.h)(0x680A023D)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_atim.h)(0x6260CE10)
-F (..\USER\src\adc_driver.c)(0x6805B72F)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\adc_driver.o --omf_browse .\output\exe\adc_driver.crf --depend .\output\exe\adc_driver.d)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+F (..\USER\src\adc_driver.c)(0x680C2238)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\adc_driver.o --omf_browse .\output\exe\adc_driver.crf --depend .\output\exe\adc_driver.d)
 I (..\USER\inc\adc_driver.h)(0x6805B07C)
 I (..\Libraries\inc\base_types.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
@@ -106,8 +111,10 @@ I (..\Libraries\inc\system_cw32f003.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_adc.h)(0x6260CE10)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588B8344)
-F (..\USER\src\ac_measurement.c)(0x6808876E)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\ac_measurement.o --omf_browse .\output\exe\ac_measurement.crf --depend .\output\exe\ac_measurement.d)
+F (..\USER\src\ac_measurement.c)(0x680B103D)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\ac_measurement.o --omf_browse .\output\exe\ac_measurement.crf --depend .\output\exe\ac_measurement.d)
 I (..\USER\inc\ac_measurement.h)(0x680886B4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
@@ -123,10 +130,12 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
-F (..\USER\src\charging_sm.c)(0x6806F01E)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\charging_sm.o --omf_browse .\output\exe\charging_sm.crf --depend .\output\exe\charging_sm.d)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+F (..\USER\src\charging_sm.c)(0x680B2940)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\charging_sm.o --omf_browse .\output\exe\charging_sm.crf --depend .\output\exe\charging_sm.d)
 I (..\USER\inc\charging_sm.h)(0x6805C97A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
-I (..\USER\inc\cp_signal.h)(0x6803159A)
+I (..\USER\inc\cp_signal.h)(0x680B276A)
 I (..\USER\inc\pp_signal.h)(0x68031705)
 I (..\USER\inc\contactor_control.h)(0x6803171B)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
@@ -143,6 +152,8 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
 F (..\USER\src\contactor_control.c)(0x680329D1)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\contactor_control.o --omf_browse .\output\exe\contactor_control.crf --depend .\output\exe\contactor_control.d)
 I (..\USER\inc\contactor_control.h)(0x6803171B)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
@@ -160,8 +171,8 @@ I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
-F (..\USER\src\cp_signal.c)(0x6808341F)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\cp_signal.o --omf_browse .\output\exe\cp_signal.crf --depend .\output\exe\cp_signal.d)
-I (..\USER\inc\cp_signal.h)(0x6803159A)
+F (..\USER\src\cp_signal.c)(0x680B27D7)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\cp_signal.o --omf_browse .\output\exe\cp_signal.crf --depend .\output\exe\cp_signal.d)
+I (..\USER\inc\cp_signal.h)(0x680B276A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
 I (..\USER\inc\pwm_driver.h)(0x680998B9)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
@@ -181,7 +192,9 @@ I (..\Libraries\inc\cw32f003_adc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_atim.h)(0x6260CE10)
-F (..\USER\src\pp_signal.c)(0x6808A98C)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\pp_signal.o --omf_browse .\output\exe\pp_signal.crf --depend .\output\exe\pp_signal.d)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+F (..\USER\src\pp_signal.c)(0x680B2826)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\pp_signal.o --omf_browse .\output\exe\pp_signal.crf --depend .\output\exe\pp_signal.d)
 I (..\USER\inc\pp_signal.h)(0x68031705)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
 I (..\USER\inc\adc_driver.h)(0x6805B07C)
@@ -200,10 +213,12 @@ I (..\Libraries\inc\system_cw32f003.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_adc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
 F (..\USER\src\ui_display.c)(0x680A0378)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\ui_display.o --omf_browse .\output\exe\ui_display.crf --depend .\output\exe\ui_display.d)
 I (..\USER\inc\ui_display.h)(0x6803176A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
-I (..\USER\inc\spi_oled_driver.h)(0x680AD2FE)
+I (..\USER\inc\spi_oled_driver.h)(0x680C2290)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h)(0x5898498A)
@@ -217,7 +232,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
 I (..\USER\inc\charging_sm.h)(0x6805C97A)
 I (..\USER\inc\ac_measurement.h)(0x680886B4)
-F (..\USER\src\hlw_uart_driver.c)(0x68088668)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\hlw_uart_driver.o --omf_browse .\output\exe\hlw_uart_driver.crf --depend .\output\exe\hlw_uart_driver.d)
+F (..\USER\src\hlw_uart_driver.c)(0x680B258E)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\hlw_uart_driver.o --omf_browse .\output\exe\hlw_uart_driver.crf --depend .\output\exe\hlw_uart_driver.d)
 I (..\USER\inc\hlw_uart_driver.h)(0x68088613)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
@@ -235,8 +250,10 @@ I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
 I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\Libraries\inc\cw32f003_uart.h)(0x6260CE10)
-F (..\USER\src\spi_oled_driver.c)(0x680AD5AD)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\spi_oled_driver.o --omf_browse .\output\exe\spi_oled_driver.crf --depend .\output\exe\spi_oled_driver.d)
-I (..\USER\inc\spi_oled_driver.h)(0x680AD2FE)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+F (..\USER\src\spi_oled_driver.c)(0x680B25F5)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\spi_oled_driver.o --omf_browse .\output\exe\spi_oled_driver.crf --depend .\output\exe\spi_oled_driver.d)
+I (..\USER\inc\spi_oled_driver.h)(0x680C2290)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -253,7 +270,25 @@ I (..\Libraries\inc\cw32f003_gpio.h)(0x67FF3A8C)
 I (..\USER\inc\config.h)(0x680A023D)
 I (..\Libraries\inc\cw32f003_spi.h)(0x68099F77)
 I (..\Libraries\inc\cw32f003_rcc.h)(0x6260CE10)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
 I (..\USER\inc\Font.h)(0x67FF5BEE)
+F (..\USER\src\error_handler.c)(0x680B29AA)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\error_handler.o --omf_browse .\output\exe\error_handler.crf --depend .\output\exe\error_handler.d)
+I (..\USER\inc\error_handler.h)(0x680B0FD1)
+I (..\USER\inc\error_codes.h)(0x680B0FC5)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (..\USER\inc\uart_driver.h)(0x680089C7)
+I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
+I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)
+I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_compiler.h)(0x5898498A)
+I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\cmsis_armcc.h)(0x5898498A)
+I (..\Libraries\inc\system_cw32f003.h)(0x6260CE10)
+I (..\Libraries\inc\base_types.h)(0x6260CE10)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588B8344)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588B8344)
+I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588B8344)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588B8344)
 F (..\Libraries\src\cw32f003_adc.c)(0x6260CE10)(--c99 -c --cpu Cortex-M0+ -D__MICROLIB -g -O0 --apcs=interwork --split_sections -I ..\Libraries\inc -I ..\USER\inc-I.\RTE\_Template-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\PS\CW32F003_DFP\1.0.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_-o .\output\exe\cw32f003_adc.o --omf_browse .\output\exe\cw32f003_adc.crf --depend .\output\exe\cw32f003_adc.d)
 I (..\Libraries\inc\cw32f003.h)(0x6260CE10)
 I (C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include\core_cm0plus.h)(0x5898498A)

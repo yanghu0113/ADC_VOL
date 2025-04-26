@@ -4,6 +4,7 @@
 #include "config.h"         // For pin/peripheral definitions
 #include "cw32f003_spi.h"   // SPI library
 #include "cw32f003_rcc.h"   // RCC library
+#include "error_handler.h"  // Include the error handler
 #include "Font.h"           // Font data
 #include <string.h>         // For memset if using buffer
 
@@ -12,44 +13,72 @@ extern void FirmwareDelay(uint32_t Cnt);
 
 //--------------------------------------------------------------------------------------------------
 // SPI Low-Level Communication Functions for OLED
-//--------------------------------------------------------------------------------------------------
+// Define a reasonable timeout for SPI flag waits
+// Adjust based on SPI clock speed and expected transaction time
+#define SPI_TIMEOUT_COUNT 10000
 
 /**
- * @brief Sends a single byte via SPI.
+ * @brief Sends a single byte via SPI with timeout.
  * @param data The byte to send.
+ * @return true if successful, false on timeout.
  */
-static void SPI_WriteByte(uint8_t data)
+static bool SPI_WriteByte(uint8_t data)
 {
-    // Wait until TX buffer is empty
-    while (SPI_GetFlagStatus(SPI_FLAG_TXE) == RESET); // Removed OLED_SPI_PERIPH argument
+    volatile uint32_t timeout;
+
+    // Wait until TX buffer is empty with timeout
+    timeout = SPI_TIMEOUT_COUNT;
+    while (SPI_GetFlagStatus(SPI_FLAG_TXE) == RESET)
+    {
+        if (timeout-- == 0) {
+            ErrorHandler_Handle(ERROR_TIMEOUT, "SPI_Write_TXE", __LINE__);
+            return false;
+        }
+    }
+
     // Send data
     SPI_SendData(data); // Removed OLED_SPI_PERIPH argument
-    // Wait until transmission is complete
-    while (SPI_GetFlagStatus(SPI_FLAG_BUSY) == SET); // Removed OLED_SPI_PERIPH argument
+
+    // Wait until transmission is complete (BUSY flag goes low) with timeout
+    timeout = SPI_TIMEOUT_COUNT;
+    while (SPI_GetFlagStatus(SPI_FLAG_BUSY) == SET)
+    {
+         if (timeout-- == 0) {
+            ErrorHandler_Handle(ERROR_TIMEOUT, "SPI_Write_BUSY", __LINE__);
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
  * @brief Writes a single command byte to the OLED via SPI.
  * @param command The command byte to write.
+ * @return true if successful, false on SPI communication failure.
  */
-void OLED_WriteCommand(uint8_t command)
+bool OLED_WriteCommand(uint8_t command)
 {
+    bool status;
     OLED_DC_LOW();  // Select command mode
     OLED_CS_LOW();  // Select OLED
-    SPI_WriteByte(command);
+    status = SPI_WriteByte(command);
     OLED_CS_HIGH(); // Deselect OLED
+    return status;
 }
 
 /**
  * @brief Writes a single data byte to the OLED via SPI.
  * @param data The data byte to write.
+ * @return true if successful, false on SPI communication failure.
  */
-void OLED_WriteData(uint8_t data)
+bool OLED_WriteData(uint8_t data)
 {
+    bool status;
     OLED_DC_HIGH(); // Select data mode
     OLED_CS_LOW();  // Select OLED
-    SPI_WriteByte(data);
+    status = SPI_WriteByte(data);
     OLED_CS_HIGH(); // Deselect OLED
+    return status;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -133,47 +162,44 @@ bool OLED_Init(void)
     FirmwareDelay(48000); // Delay ~1ms
 
     // 5. SSD1309 Initialization Sequence (Refer to SSD1309 Datasheet)
-    OLED_WriteCommand(0xAE); // Display OFF
+    // Check status of each command write. If any fail, report error and return false.
+    if (!OLED_WriteCommand(0xAE)) return false; // Display OFF
+    if (!OLED_WriteCommand(0xD5)) return false; // Set Display Clock Divide Ratio/Oscillator Frequency
+    if (!OLED_WriteCommand(0xF0)) return false; // Set Ratio
+    if (!OLED_WriteCommand(0xA8)) return false; // Set Multiplex Ratio
+    if (!OLED_WriteCommand(0x3F)) return false; // 1/64 Duty
+    if (!OLED_WriteCommand(0xD3)) return false; // Set Display Offset
+    if (!OLED_WriteCommand(0x00)) return false; // No offset
+    if (!OLED_WriteCommand(0x40)) return false; // Set Display Start Line (0)
+    if (!OLED_WriteCommand(0x8D)) return false; // Set Charge Pump Setting
+    if (!OLED_WriteCommand(0x14)) return false; // Enable Charge Pump
+    if (!OLED_WriteCommand(0x20)) return false; // Set Memory Addressing Mode
+    if (!OLED_WriteCommand(0x00)) return false; // Horizontal Addressing Mode
+    if (!OLED_WriteCommand(0xA1)) return false; // Set Segment Re-map
+    if (!OLED_WriteCommand(0xC8)) return false; // Set COM Output Scan Direction
+    if (!OLED_WriteCommand(0xDA)) return false; // Set COM Pins Hardware Configuration
+    if (!OLED_WriteCommand(0x12)) return false; // Sequential COM pin config
+    if (!OLED_WriteCommand(0x81)) return false; // Set Contrast Control
+    if (!OLED_WriteCommand(0xFF)) return false; // Max contrast
+    if (!OLED_WriteCommand(0xD9)) return false; // Set Pre-charge Period
+    if (!OLED_WriteCommand(0x22)) return false; // Phase 1: 2 DCLKs, Phase 2: 2 DCLKs
+    if (!OLED_WriteCommand(0xDB)) return false; // Set VCOMH Deselect Level
+    if (!OLED_WriteCommand(0x20)) return false; // ~0.77 x VCC
+    if (!OLED_WriteCommand(0xA4)) return false; // Set Entire Display ON/OFF
+    if (!OLED_WriteCommand(0xA6)) return false; // Set Normal Display
 
-    OLED_WriteCommand(0xD5); // Set Display Clock Divide Ratio/Oscillator Frequency
-    OLED_WriteCommand(0xF0); // Set Ratio (Check datasheet, 0xF0 is often used for SSD1309)
+    // Clear screen RAM, check status
+    if (!OLED_Clear()) {
+        // Error already handled by ErrorHandler_Handle in OLED_Clear->OLED_WriteData->SPI_WriteByte
+        // We still need to report the overall OLED init failure though.
+        ErrorHandler_Handle(ERROR_OLED_INIT_FAILED, "OLED_Init_Clear", __LINE__);
+        return false;
+    }
 
-    OLED_WriteCommand(0xA8); // Set Multiplex Ratio
-    OLED_WriteCommand(0x3F); // 1/64 Duty (for 128x64)
+    // Turn display ON
+    if (!OLED_WriteCommand(0xAF)) return false; // Display ON
 
-    OLED_WriteCommand(0xD3); // Set Display Offset
-    OLED_WriteCommand(0x00); // No offset
-
-    OLED_WriteCommand(0x40); // Set Display Start Line (0)
-
-    OLED_WriteCommand(0x8D); // Set Charge Pump Setting
-    OLED_WriteCommand(0x14); // Enable Charge Pump (DC/DC)
-
-    OLED_WriteCommand(0x20); // Set Memory Addressing Mode
-    OLED_WriteCommand(0x00); // Horizontal Addressing Mode
-
-    OLED_WriteCommand(0xA1); // Set Segment Re-map (Column 127 -> SEG0) - Adjust if mirrored
-    OLED_WriteCommand(0xC8); // Set COM Output Scan Direction (Remapped) - Adjust if mirrored
-
-    OLED_WriteCommand(0xDA); // Set COM Pins Hardware Configuration
-    OLED_WriteCommand(0x12); // Sequential COM pin config, Disable COM Left/Right remap
-
-    OLED_WriteCommand(0x81); // Set Contrast Control
-    OLED_WriteCommand(0xFF); // Max contrast (adjust as needed)
-
-    OLED_WriteCommand(0xD9); // Set Pre-charge Period
-    OLED_WriteCommand(0x22); // Phase 1: 2 DCLKs, Phase 2: 2 DCLKs (Check datasheet)
-
-    OLED_WriteCommand(0xDB); // Set VCOMH Deselect Level
-    OLED_WriteCommand(0x20); // ~0.77 x VCC (Check datasheet)
-
-    OLED_WriteCommand(0xA4); // Set Entire Display ON/OFF (A4=Output follows RAM)
-    OLED_WriteCommand(0xA6); // Set Normal Display (A6=Normal, A7=Inverse)
-
-    OLED_Clear();            // Clear screen RAM
-
-    OLED_WriteCommand(0xAF); // Display ON
-
+    // If all commands succeeded
     return true; // Indicate successful initialization
 }
 
@@ -185,29 +211,39 @@ bool OLED_Init(void)
  * @brief Sets the DDRAM writing cursor position.
  * @param x Horizontal position (0-127).
  * @param y Vertical page position (0-7).
+ * @return true if successful, false otherwise.
  */
-void OLED_SetCursor(uint8_t x, uint8_t y)
+bool OLED_SetCursor(uint8_t x, uint8_t y)
 {
     // SSD1309 uses different commands for setting column/page
-    OLED_WriteCommand(0xB0 + y);         // Set Page Start Address for Page Addressing Mode (0-7)
-    OLED_WriteCommand(0x00 | (x & 0x0F)); // Set Lower Column Start Address for Page Addressing Mode
-    OLED_WriteCommand(0x10 | (x >> 4));  // Set Higher Column Start Address for Page Addressing Mode
+    // Check status of each command write
+    if (!OLED_WriteCommand(0xB0 + y)) return false;         // Set Page Start Address
+    if (!OLED_WriteCommand(0x00 | (x & 0x0F))) return false; // Set Lower Column Start Address
+    if (!OLED_WriteCommand(0x10 | (x >> 4))) return false;  // Set Higher Column Start Address
+    return true;
 }
 
 /**
  * @brief Clears the entire OLED screen (writes 0x00 to all GRAM).
+ * @return true if successful, false if any SPI write fails.
  */
-void OLED_Clear(void)
+bool OLED_Clear(void)
 {
     uint8_t i, n;
     for(i = 0; i < 8; i++)
     {
-        OLED_SetCursor(0, i);
+        // OLED_SetCursor calls OLED_WriteCommand which now returns bool, but we might ignore its status here
+        // as failure is more likely during the bulk data write. Or check it too for robustness.
+        OLED_SetCursor(0, i); // Assuming SetCursor failure is less critical or handled internally if needed
         for(n = 0; n < 128; n++)
         {
-            OLED_WriteData(0x00);
+            if (!OLED_WriteData(0x00)) {
+                // Error already handled by ErrorHandler_Handle in OLED_WriteData->SPI_WriteByte
+                return false; // Propagate failure
+            }
         }
     }
+    return true; // Success
 }
 
 /**
@@ -237,8 +273,9 @@ void OLED_Fill(uint8_t data)
  * @param y Starting page position (0-7).
  * @param chr Character to display.
  * @param size Font size (currently supports 6 for 6x8, 8 for 8x16).
+ * @return true if successful, false if any SPI write fails.
  */
-void OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size)
+bool OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size)
 {
     uint8_t c = 0, i = 0;
     c = chr - ' '; // Get character index in font table (assuming ASCII starts from space)
@@ -247,19 +284,23 @@ void OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size)
 
     if (size == 8) // 8x16 Font
     {
-        OLED_SetCursor(x, y);
-        for (i = 0; i < 8; i++)
-            OLED_WriteData(F8X16[c * 16 + i]); // Write top half
-        OLED_SetCursor(x, y + 1);
-        for (i = 0; i < 8; i++)
-            OLED_WriteData(F8X16[c * 16 + i + 8]); // Write bottom half
+        if (!OLED_SetCursor(x, y)) return false;
+        for (i = 0; i < 8; i++) {
+            if (!OLED_WriteData(F8X16[c * 16 + i])) return false; // Write top half
+        }
+        if (!OLED_SetCursor(x, y + 1)) return false;
+        for (i = 0; i < 8; i++) {
+            if (!OLED_WriteData(F8X16[c * 16 + i + 8])) return false; // Write bottom half
+        }
     }
     else // Default to 6x8 Font
     {
-        OLED_SetCursor(x, y);
-        for (i = 0; i < 6; i++)
-            OLED_WriteData(F6x8[c][i]);
+        if (!OLED_SetCursor(x, y)) return false;
+        for (i = 0; i < 6; i++) {
+            if (!OLED_WriteData(F6x8[c][i])) return false;
+        }
     }
+    return true;
 }
 
 /**
@@ -268,15 +309,18 @@ void OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size)
  * @param y Starting page position (0-7).
  * @param str Pointer to the string.
  * @param size Font size (6 or 8).
+ * @return true if successful, false if any character fails to display.
  */
-void OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size)
+bool OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size)
 {
     uint8_t j = 0;
     uint8_t char_width = (size == 8) ? 8 : 6;
 
     while (str[j] != '\0')
     {
-        OLED_ShowChar(x, y, str[j], size);
+        if (!OLED_ShowChar(x, y, str[j], size)) {
+            return false; // Propagate error from ShowChar
+        }
         x += char_width;
         if (x > (OLED_WIDTH - char_width)) // Wrap to next line
         {
@@ -290,6 +334,7 @@ void OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size)
         }
         j++;
     }
+    return true;
 }
 
 // Helper function for OLED_ShowNum
@@ -307,12 +352,14 @@ uint32_t oled_pow(uint8_t m, uint8_t n)
  * @param num Number to display.
  * @param len Number of digits to display.
  * @param size Font size (6 or 8).
+ * @return true if successful, false if any character fails to display.
  */
-void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
+bool OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
 {
     uint8_t t, temp;
     uint8_t enshow = 0;
     uint8_t char_width = (size == 8) ? 8 : 6;
+    bool status = true;
 
     for(t = 0; t < len; t++)
     {
@@ -321,13 +368,14 @@ void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
         {
             if(temp == 0)
             {
-                OLED_ShowChar(x + t * char_width, y, ' ', size); // Show space for leading zeros
+                if (!OLED_ShowChar(x + t * char_width, y, ' ', size)) status = false; // Show space for leading zeros
                 continue;
             }
             else enshow = 1;
         }
-        OLED_ShowChar(x + t * char_width, y, temp + '0', size);
+        if (!OLED_ShowChar(x + t * char_width, y, temp + '0', size)) status = false;
     }
+    return status;
 }
 
 /**
@@ -337,12 +385,14 @@ void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
  * @param num Number to display.
  * @param len Number of digits to display (e.g., 2 for byte, 4 for half-word, 8 for word).
  * @param size Font size (6 or 8).
+ * @return true if successful, false if any character fails to display.
  */
-void OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
+bool OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size)
 {
     uint8_t t, temp;
     uint8_t char_width = (size == 8) ? 8 : 6;
     char hex_char;
+    bool status = true;
 
     for(t = 0; t < len; t++)
     {
@@ -355,8 +405,9 @@ void OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t si
         {
             hex_char = temp - 10 + 'A';
         }
-        OLED_ShowChar(x + t * char_width, y, hex_char, size);
+        if (!OLED_ShowChar(x + t * char_width, y, hex_char, size)) status = false;
     }
+    return status;
 }
 
 
@@ -370,15 +421,18 @@ void OLED_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t 
     uint8_t x, y;
     // uint8_t width = x1 - x0 + 1; // Unused variable removed
     uint8_t height_pages = (y1 - y0 + 1) / 8; // Assuming height is multiple of 8
+    bool status = true;
 
     for (y = y0 / 8; y < (y0 / 8) + height_pages; y++)
     {
-        OLED_SetCursor(x0, y);
+        if (!OLED_SetCursor(x0, y)) { status = false; break; } // Check cursor set status
         for (x = x0; x <= x1; x++)
         {
-            OLED_WriteData(BMP[i++]);
+            if (!OLED_WriteData(BMP[i++])) { status = false; break; } // Check data write status
         }
+        if (!status) break; // Exit outer loop if inner loop failed
     }
+    // Return status? Function is void currently. Consider changing if needed.
 }
 
 // Placeholder for buffer update function if using buffer
@@ -387,14 +441,17 @@ void OLED_UpdateScreen(void)
     #ifdef OLED_USE_BUFFER
     // Implementation to write OLED_GRAM buffer to the screen
     uint8_t i, n;
+    bool status = true;
     for(i = 0; i < 8; i++)
     {
-        OLED_SetCursor(0, i);
+        if (!OLED_SetCursor(0, i)) { status = false; break; }
         for(n = 0; n < 128; n++)
         {
-            OLED_WriteData(OLED_GRAM[i * 128 + n]);
+            if (!OLED_WriteData(OLED_GRAM[i * 128 + n])) { status = false; break; }
         }
+        if (!status) break;
     }
+    // Return status? Function is void currently. Consider changing if needed.
     #endif
 }
 

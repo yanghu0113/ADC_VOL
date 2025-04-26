@@ -3,6 +3,7 @@
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
 #include "cw32f003_uart.h"
+#include "error_handler.h" // Include the error handler
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h> // For memcpy if needed, though likely not for single byte ops
@@ -261,10 +262,16 @@ void UART_Driver_Handle_TXE(void) { // Removed static
 void UART_Driver_Handle_RC(void) { // Removed static
     if (USART_GetFlagStatus(DEBUG_USART_PERIPH, USART_FLAG_RC) != RESET) { // Use peripheral macro
         uint8_t data = USART_ReceiveData_8bit(DEBUG_USART_PERIPH); // Use peripheral macro
-        // Attempt to put data into buffer. If full, data is lost.
-        // Consider adding overflow handling/flag if necessary.
-        RingBuffer_Put(&rx_buffer, data);
-        USART_ClearITPendingBit(DEBUG_USART_PERIPH, USART_IT_RC); // Clear RC flag *after* reading data - Use peripheral macro
+
+        // Attempt to put data into buffer.
+        if (!RingBuffer_Put(&rx_buffer, data)) {
+            // Buffer is full, data is lost. Report the error.
+            // WARNING: Calling complex handlers from ISR can be problematic.
+            // Consider setting a flag for the main loop instead in critical systems.
+            ErrorHandler_Handle(ERROR_BUFFER_FULL, "UART1_ISR", __LINE__);
+        }
+        // Clear RC flag *after* reading data and attempting to store it
+        USART_ClearITPendingBit(DEBUG_USART_PERIPH, USART_IT_RC); // Use peripheral macro
     }
     // Note: Overrun flag (USART_FLAG_OV) is not defined in cw32f003_uart.h
      // Overrun conditions might need to be inferred or handled differently if required.

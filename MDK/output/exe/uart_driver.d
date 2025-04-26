@@ -16,3 +16,5 @@
 .\output\exe\uart_driver.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\uart_driver.o: ..\Libraries\inc\cw32f003_gpio.h
 .\output\exe\uart_driver.o: ..\Libraries\inc\cw32f003_uart.h
+.\output\exe\uart_driver.o: ..\USER\inc\error_handler.h
+.\output\exe\uart_driver.o: ..\USER\inc\error_codes.h

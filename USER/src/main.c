@@ -2,12 +2,12 @@
 #include "config.h"
 #include "uart_driver.h"
 #include "pwm_driver.h"
-#include "oled_driver.h"
 #include "adc_driver.h"   // Include the ADC driver header (used by submodules)
 #include <stdio.h>
 #include "system_cw32f003.h" // Include for SystemCoreClock variable
 #include "cw32f003_iwdt.h"   // Include IWDT header
 #include "cw32f003_systick.h" // Include SysTick header
+#include "error_handler.h"   // Include the new error handler
 
 // Include new charging gun modules
 #include "charging_sm.h"
@@ -16,7 +16,6 @@
 #include "spi_oled_driver.h" // Include new SPI OLED driver header
 
 static bool System_Init(void);
-static void Error_Handler(void);
 
 // --- Global Task Flags (set by SysTick_Handler) ---
 volatile bool flag_run_state_machine = false; // Set every 10ms
@@ -27,12 +26,19 @@ extern volatile bool hlw8032_packet_ready;    // Flag defined in ac_measurement.
 
 int32_t main(void)
 {
+    // Attempt system initialization
     if (!System_Init()) {
-        
-        Error_Handler();
+        // System_Init already called ErrorHandler_Handle for specific failures.
+        // ErrorHandler_Handle might have already halted if the error was critical.
+        // If execution reaches here, it means init failed but wasn't deemed
+        // immediately fatal by the handler. We still should not proceed.
+        printf("System Initialization failed. Halting.\r\n");
+        // Optional: Add specific LED blink pattern here for init failure
+        while(1) {} // Halt
     }
 
-    // Initialize the Charging State Machine, UI, AC Measurement, and OLED
+    // --- Initialization of Application Modules ---
+    // These should ideally also report errors via ErrorHandler_Handle if they fail
     SM_Init();
     UI_Display_Init();     
     AC_Measurement_Init(); // Initialize HLW8032 communication
@@ -94,32 +100,40 @@ int32_t main(void)
  */
 static bool System_Init(void)
 {
-    bool status = true;
-    
-    //Initialize the correct OLED driver (SPI version)
-     if (!OLED_Init()) { // Remove call to old I2C init
-         status = false;
-         return status; 
-     }
-    
+    bool overall_status = true; // Track overall success
+
+    // Initialize the correct OLED driver (SPI version)
+    // Assuming OLED_Init returns bool and handles SPI init internally
+    if (!OLED_Init()) {
+        ErrorHandler_Handle(ERROR_OLED_INIT_FAILED, "System_Init", __LINE__);
+        overall_status = false;
+        // Decide whether to continue or return immediately based on severity
+        // For now, let's continue to report all init errors
+    }
+
+    // Initialize Debug UART (UART1)
     if (!UART_Driver_Init(DEBUG_UART_BAUDRATE)) {
-        status = false;
-        return status; 
+        // UART_Driver_Init might call ErrorHandler_Handle itself if modified,
+        // but we call it here to ensure it's reported at this level.
+        ErrorHandler_Handle(ERROR_UART1_INIT_FAILED, "System_Init", __LINE__);
+        overall_status = false;
+        // UART1 is critical for debugging, consider returning false immediately?
+        // return false; // Example: Halt on critical UART failure
     }
-    
+
+    // Initialize PWM Driver
     if (!PWM_Driver_Init(INITIAL_PWM_FREQ_HZ, INITIAL_PWM_DUTY_PERCENT)) {
-        printf("Error: PWM Init Failed!\r\n");
-        status = false;
-        return status;
+        ErrorHandler_Handle(ERROR_PWM_INIT_FAILED, "System_Init", __LINE__);
+        overall_status = false;
     }
 
-    if (!ADC_Driver_Init()) { 
-        printf("Error: ADC Driver Init Failed!\r\n");
-        status = false;
-        return status;
+    // Initialize ADC Driver
+    if (!ADC_Driver_Init()) {
+        ErrorHandler_Handle(ERROR_ADC_INIT_FAILED, "System_Init", __LINE__);
+        overall_status = false;
     }
 
-    /* 初始化IWDT (Independent Watchdog Timer - Assuming RC10K source based on example) */
+    /* Initialize IWDT (Independent Watchdog Timer) */
     IWDT_InitTypeDef IWDT_InitStruct;
     RCC_APBPeriphClk_Enable1(RCC_APB1_PERIPH_IWDT, ENABLE); // Enable IWDT peripheral clock
 
@@ -132,33 +146,40 @@ static bool System_Init(void)
     IWDT_InitStruct.IWDT_Pause = IWDT_SLEEP_CONTINUE;           // Continue in sleep modes (Adjust if needed)
 
     // Initialization sequence based on example (Configure only, don't start yet)
-    IWDT_Unlock(); // Unlock needed before Init? Example doesn't show it here, but keep for safety? Let's remove based on example.
-    IWDT_Init(&IWDT_InitStruct); // Initialize with settings
-    // IWDT_Cmd();                  // Start the watchdog counter - MOVED TO main()
+    // IWDT_Unlock(); // Unlock seems not needed before Init based on examples
+    // IWDT_Init returns void, so we cannot check status directly. Assume success for now.
+    IWDT_Init(&IWDT_InitStruct);
+    // ErrorHandler_Handle(ERROR_IWDT_INIT_FAILED, "System_Init", __LINE__); // Removed as we can't check status
+    // IWDT_Cmd();                  // Start the watchdog counter - MOVED TO main() after all init
     // while (!CW_IWDT->SR_f.RUN);  // Wait until the watchdog is running - MOVED TO main()
     // IWDT_Refresh();              // Perform an initial refresh immediately after starting - MOVED TO main()
 
-    /* 初始化SysTick (1ms tick) */
-    InitTick(SystemCoreClock); // Configure SysTick for 1ms interrupts
-    printf("SysTick Initialized (1ms tick)\r\n");
+    /* Initialize SysTick (1ms tick) */
+    // Assuming InitTick doesn't return a status easily, but it's critical.
+    // If SysTick fails, ErrorHandler_Handle might not even work if called later.
+    InitTick(SystemCoreClock);
+    // We might assume SysTick init works, or add a basic check if possible.
+    // A simple check could be if uwTick starts incrementing, but that's complex here.
+    // For now, assume it works, but note it's a potential point of silent failure.
+    // ErrorHandler_Handle(ERROR_SYSTICK_INIT_FAILED, "System_Init", __LINE__); // Example if check added
 
-    /* 初始化成功 */
-    printf("\r\nCW32F003 Drivers Initialized Successfully\r\n");
-    printf("IWDT Initialized (Timeout ~500ms)\r\n"); // Updated comment
-    return status;
+    // Report overall success/failure
+    if (overall_status) {
+        printf("\r\nCW32F003 Core System Initialized Successfully\r\n");
+        printf("IWDT Configured (Timeout ~500ms)\r\n");
+        printf("SysTick Initialized (1ms tick)\r\n");
+    } else {
+        printf("\r\nCW32F003 Core System Initialization encountered errors!\r\n");
+        // ErrorHandler_Handle was already called for specific errors.
+    }
+
+    return overall_status;
 }
 
 // Removed Display_Status and Update_OLED_Display as UI is handled by ui_display module
 
-static void Error_Handler(void)
-{
-    printf("Error: Peripheral Initialization Failed! Halting.\r\n");
-
-    
-    while(1) {
-        /* 可以添加系统复位或安全模式切换代码 */
-    }
-}
+// Removed static void Error_Handler(void) as its functionality is replaced by ErrorHandler_Handle
+// and the halt loop in main().
 
 
 

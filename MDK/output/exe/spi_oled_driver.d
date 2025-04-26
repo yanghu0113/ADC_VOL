@@ -16,4 +16,6 @@
 .\output\exe\spi_oled_driver.o: ..\USER\inc\config.h
 .\output\exe\spi_oled_driver.o: ..\Libraries\inc\cw32f003_spi.h
 .\output\exe\spi_oled_driver.o: ..\Libraries\inc\cw32f003_rcc.h
+.\output\exe\spi_oled_driver.o: ..\USER\inc\error_handler.h
+.\output\exe\spi_oled_driver.o: ..\USER\inc\error_codes.h
 .\output\exe\spi_oled_driver.o: ..\USER\inc\Font.h

@@ -4,6 +4,7 @@
 #include "cw32f003_adc.h" // Include ADC peripheral header for channel constants
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
+#include "error_handler.h" // Include the error handler
 
 
 
@@ -16,8 +17,6 @@ void PP_Signal_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct;
 
-    // Configure ADC Input Pin (e.g., PA2)
-    // Assuming RCC clock for GPIOA and ADC is enabled elsewhere
     // PP_ADC_GPIO_CLK_ENABLE(); // Clock should be enabled centrally
     // ADC_PERIPH_CLK_ENABLE();  // Clock should be enabled centrally
 
@@ -25,7 +24,6 @@ void PP_Signal_Init(void)
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG; // Analog mode for ADC
     GPIO_Init(PP_ADC_GPIO_PORT, &GPIO_InitStruct);
 
-    // Initialize ADC Driver (assuming it's already called in System_Init)
     // Ensure the specific channel (PP_ADC_CHANNEL) is configured if needed by ADC_Driver_Init
     // ADC_Driver_Init(); // Might not be needed if called globally
 }
@@ -67,11 +65,20 @@ uint16_t PP_GetCableCapacity(void)
     const uint16_t THRESHOLD_32A_HIGH = 1000;
     const uint16_t THRESHOLD_63A_LOW = 200;
     const uint16_t THRESHOLD_63A_HIGH = 500;
+    const uint16_t ADC_ERROR_VALUE = 0xFFFF; // Value returned by ADC_Read_Channel_Raw on timeout
 
     uint16_t adc_raw = ADC_Read_Channel_Raw(PP_ADC_CHANNEL); // Read PP channel using defined constant
 
-    // Add simple averaging or filtering here if needed for stability
+    // Check for ADC read error (timeout)
+    if (adc_raw == ADC_ERROR_VALUE) {
+        // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
+        return PP_CAPACITY_UNKNOWN; // Return unknown capacity on ADC error
+    }
 
+    // Add simple averaging or filtering here if needed for stability
+    // Note: If averaging, check each raw read for ADC_ERROR_VALUE
+
+    // Determine capacity based on thresholds
     if (adc_raw >= THRESHOLD_13A_LOW && adc_raw <= THRESHOLD_13A_HIGH) {
         return PP_CAPACITY_13A;
     } else if (adc_raw >= THRESHOLD_20A_LOW && adc_raw <= THRESHOLD_20A_HIGH) {
@@ -82,6 +89,8 @@ uint16_t PP_GetCableCapacity(void)
         return PP_CAPACITY_63A;
     } else {
         // Outside known ranges, or very low/high values indicating open/short
+        // Report this potentially invalid resistance reading
+        ErrorHandler_Handle(ERROR_PP_RESISTANCE_INVALID, "PP_GetCapacity", __LINE__);
         return PP_CAPACITY_UNKNOWN;
     }
 }

@@ -20,10 +20,11 @@
 .\output\exe\main.o: ..\USER\inc\uart_driver.h
 .\output\exe\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\output\exe\main.o: ..\USER\inc\pwm_driver.h
-.\output\exe\main.o: ..\USER\inc\oled_driver.h
 .\output\exe\main.o: ..\USER\inc\adc_driver.h
 .\output\exe\main.o: ..\Libraries\inc\cw32f003_iwdt.h
 .\output\exe\main.o: ..\Libraries\inc\cw32f003_systick.h
+.\output\exe\main.o: ..\USER\inc\error_handler.h
+.\output\exe\main.o: ..\USER\inc\error_codes.h
 .\output\exe\main.o: ..\USER\inc\charging_sm.h
 .\output\exe\main.o: ..\USER\inc\ui_display.h
 .\output\exe\main.o: ..\USER\inc\ac_measurement.h

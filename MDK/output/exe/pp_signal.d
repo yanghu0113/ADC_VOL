@@ -17,3 +17,5 @@
 .\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_adc.h
 .\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\pp_signal.o: ..\Libraries\inc\cw32f003_gpio.h
+.\output\exe\pp_signal.o: ..\USER\inc\error_handler.h
+.\output\exe\pp_signal.o: ..\USER\inc\error_codes.h

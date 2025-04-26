@@ -7,9 +7,9 @@
 
 //-----------------OLED SPI Pin Definition----------------
 // SPI Pins (Using SPI1 based on PC0/PC2)
-#define OLED_SPI_PORT           CW_GPIOB
-#define OLED_SCK_PIN            GPIO_PIN_7  // SCK: PC0
-#define OLED_MOSI_PIN           GPIO_PIN_2  // MOSI: PC2
+//#define OLED_SPI_PORT           CW_GPIOB
+//#define OLED_SCK_PIN            GPIO_PIN_7  // SCK: PC0
+//#define OLED_MOSI_PIN           GPIO_PIN_2  // MOSI: PC2
 // MISO (PC1) is not typically needed for display output
 
 // Control Pins
@@ -37,21 +37,21 @@
 
 
 // Function Prototypes
-bool OLED_Init(void); // Changed return type to bool
-void OLED_Clear(void);
-void OLED_SetCursor(uint8_t x, uint8_t y);
-void OLED_DrawPixel(uint8_t x, uint8_t y, uint8_t color); // color: 1=white, 0=black
-void OLED_Fill(uint8_t data);
-void OLED_UpdateScreen(void); // Update the display with buffer content (if using buffer)
-void OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size); // size: 6 or 8 (for 6x8 or 8x16 font)
-void OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size);
-void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size);
-void OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size);
-void OLED_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]);
+bool OLED_Init(void);
+bool OLED_Clear(void); // Changed return type
+bool OLED_SetCursor(uint8_t x, uint8_t y); // Changed return type
+void OLED_DrawPixel(uint8_t x, uint8_t y, uint8_t color); // color: 1=white, 0=black (Keep void if not checking status)
+void OLED_Fill(uint8_t data); // Keep void if not checking status
+void OLED_UpdateScreen(void); // Keep void if not checking status
+bool OLED_ShowChar(uint8_t x, uint8_t y, char chr, uint8_t size); // Changed return type
+bool OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size); // Changed return type
+bool OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size); // Changed return type
+bool OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size); // Changed return type
+void OLED_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]); // Keep void if not checking status
 
-// Low-level I2C communication functions specific to OLED
-void OLED_WriteCommand(uint8_t command); // Kept for compatibility, implementation changes
-void OLED_WriteData(uint8_t data);       // Kept for compatibility, implementation changes
+// Low-level SPI communication functions specific to OLED
+bool OLED_WriteCommand(uint8_t command); // Changed return type
+bool OLED_WriteData(uint8_t data);       // Changed return type
 // Removed: void OLED_WriteBytes(uint8_t* data, uint16_t length, uint8_t controlByte); // I2C specific
 
 // Optional: Define if using a screen buffer

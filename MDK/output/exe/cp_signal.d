@@ -19,3 +19,5 @@
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_rcc.h
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_gpio.h
 .\output\exe\cp_signal.o: ..\Libraries\inc\cw32f003_atim.h
+.\output\exe\cp_signal.o: ..\USER\inc\error_handler.h
+.\output\exe\cp_signal.o: ..\USER\inc\error_codes.h

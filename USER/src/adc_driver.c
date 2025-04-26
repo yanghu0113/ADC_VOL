@@ -3,6 +3,7 @@
 #include "cw32f003_rcc.h"  // Include RCC for clock enabling
 #include "cw32f003_gpio.h" // Include GPIO for pin configuration
 #include "cw32f003_adc.h"  // Include ADC peripheral driver
+#include "error_handler.h" // Include the error handler
 #include <stdio.h>         // For printf debugging
 #include <math.h>          // Include for potential float operations (though likely not strictly needed for this formula)
 
@@ -11,6 +12,11 @@
 #define CAL_TRIM1V5_ADDRESS (0x001007C6UL) // 16-bit Trim value for 1.5V ref
 
 #define VOLTAGE_AVG_SAMPLES 8 // Number of samples to average for voltage reading
+
+// Define a reasonable timeout count for ADC conversion wait loop
+// Adjust based on clock speed, sample time, and expected conversion time.
+// Example: If conversion takes ~1us, 10000 loops is ~10ms timeout.
+#define ADC_CONVERSION_TIMEOUT 10000
 
 /**
  * @brief Initializes the ADC peripheral for single channel conversion on PA01.
@@ -89,10 +95,8 @@ uint16_t ADC_Read_RawValue(void)
 uint16_t ADC_Read_Voltage_mV(void)
 {
     ADC_SingleChTypeDef ADC_SingleChStructure_Volt; // Structure for voltage config
-    // uint16_t rawValue; // Removed unused variable
 
     // --- Re-configure ADC for Voltage Sensing (PA01, VDD ref) ---
-    // Ensure ADC clock is enabled (usually done in init, but good practice)
     RCC_APBPeriphClk_Enable2(RCC_APB2_PERIPH_ADC, ENABLE);
     ADC_Enable(); // Ensure ADC is enabled
 
@@ -135,11 +139,12 @@ uint16_t ADC_Read_Voltage_mV(void)
 /**
  * @brief Reads the raw ADC conversion value from a specific channel.
  * @param channel The ADC channel to read (e.g., ADC_ExInputCH1, ADC_ExInputCH2).
- * @return Raw 12-bit ADC conversion result, or 0xFFFF on error (e.g., invalid channel).
+ * @return Raw 12-bit ADC conversion result, or 0xFFFF on timeout error.
  */
 uint16_t ADC_Read_Channel_Raw(uint32_t channel) // Use uint32_t for channel
 {
     ADC_SingleChTypeDef ADC_SingleChStructure;
+    volatile uint32_t timeout_counter = ADC_CONVERSION_TIMEOUT; // Timeout counter
 
     // Basic check for valid external channel range if needed, though type system helps
     // if (channel > ADC_ExInputCH7) return 0xFFFF; // Example check
@@ -170,12 +175,20 @@ uint16_t ADC_Read_Channel_Raw(uint32_t channel) // Use uint32_t for channel
     // Start software conversion
     ADC_SoftwareStartConvCmd(ENABLE);
 
-    // Wait for conversion to complete
-    // Add a timeout mechanism here in a real application to prevent infinite loops
-    while(ADC_GetITStatus(ADC_IT_EOC) == RESET);
+    // Wait for conversion to complete with timeout
+    while(ADC_GetITStatus(ADC_IT_EOC) == RESET)
+    {
+        if (timeout_counter-- == 0)
+        {
+            // Timeout occurred
+            ErrorHandler_Handle(ERROR_TIMEOUT, "ADC_Read_Raw", __LINE__);
+            ADC_SoftwareStartConvCmd(DISABLE); // Stop potentially stuck conversion
+            return 0xFFFF; // Return error code
+        }
+    }
 
     // Clear the End Of Conversion flag
-    ADC_ClearITPendingBit(ADC_IT_EOC);
+    ADC_ClearITPendingBit(ADC_IT_EOC); // Clear flag *after* checking it
 
     // Return the conversion result
     return ADC_GetConversionValue();

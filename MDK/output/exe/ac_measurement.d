@@ -14,3 +14,5 @@
 .\output\exe\ac_measurement.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\output\exe\ac_measurement.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 .\output\exe\ac_measurement.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+.\output\exe\ac_measurement.o: ..\USER\inc\error_handler.h
+.\output\exe\ac_measurement.o: ..\USER\inc\error_codes.h

@@ -3,6 +3,7 @@
 #include "cw32f003_rcc.h"
 #include "cw32f003_gpio.h"
 #include "cw32f003_atim.h"
+#include "error_handler.h" // Include the error handler
 
 // Store configuration for getter functions
 static uint32_t pwm_frequency = 0;
@@ -29,10 +30,11 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     if (freqHz == 0 || dutyCyclePercent > 100)
     {
         // Invalid parameters
+        ErrorHandler_Handle(ERROR_INVALID_PARAM, "PWM_Init", __LINE__);
         return false; // Return failure
     }
     // Enable clocks using macros from config.h
-    RCC_HSI_Enable(RCC_HSIOSC_DIV1); // Keep HSI config here for now
+    // RCC_HSI_Enable(RCC_HSIOSC_DIV1); // REMOVED: System clock should be set in SystemInit, not here.
     PWM_TIMER_CLK_ENABLE();
     PWM_GPIO_CLK_ENABLE();
     // GPIOB clock enable was unnecessary for PA06 PWM output
@@ -65,8 +67,10 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     {
         prescalerValue++;
         arrValue = (timerClockFreq / (freqHz * (prescalerValue + 1))) - 1;
-        if (prescalerValue > 255) { // Check against max prescaler hardware might support (often 16-bit, but ATIM uses specific values)
+        // Check if prescaler exceeded a reasonable limit (ATIM PSC is 8-bit, 0-255 maps to DIV1-DIV256)
+        if (prescalerValue > 255) {
              // Cannot achieve frequency with available prescalers/clock
+             ErrorHandler_Handle(ERROR_PWM_INIT_FAILED, "PWM_Init_FreqCalc", __LINE__);
              return false; // Return failure
         }
     }
@@ -90,7 +94,11 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     else if (prescalerValue < 32) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV32; // Check if DIV32 exists
     else if (prescalerValue < 64) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV64; // Check if DIV64 exists
     else if (prescalerValue < 256) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV256; // Check if DIV256 exists
-    else return false; // Prescaler too large for defined enums - Return failure
+    else {
+        // Prescaler too large for defined enums or calculation failed
+        ErrorHandler_Handle(ERROR_PWM_INIT_FAILED, "PWM_Init_PrescalerMap", __LINE__);
+        return false; // Return failure
+    }
 
     // Use the calculated prescaler enum value
     ATIM_InitStruct.ClockSelect = ATIM_CLOCK_PCLK;
@@ -189,6 +197,7 @@ bool PWM_Set_DutyCycle(uint8_t dutyCyclePercent)
 
     if (dutyCyclePercent > 100)
     {
+        ErrorHandler_Handle(ERROR_INVALID_PARAM, "PWM_SetDuty", __LINE__);
         return false; // Invalid parameter
     }
 
