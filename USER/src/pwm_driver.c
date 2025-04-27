@@ -91,9 +91,9 @@ bool PWM_Driver_Init(uint32_t freqHz, uint8_t dutyCyclePercent) // Changed retur
     else if (prescalerValue < 4) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV4; // Example mapping, check datasheet
     else if (prescalerValue < 8) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV8;
     else if (prescalerValue < 16) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV16;
-    else if (prescalerValue < 32) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV32; // Check if DIV32 exists
-    else if (prescalerValue < 64) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV64; // Check if DIV64 exists
-    else if (prescalerValue < 256) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV256; // Check if DIV256 exists
+    else if (prescalerValue < 32) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV32; 
+    else if (prescalerValue < 64) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV64; 
+    else if (prescalerValue < 256) ATIM_InitStruct.Prescaler = ATIM_Prescaler_DIV256; 
     else {
         // Prescaler too large for defined enums or calculation failed
         ErrorHandler_Handle(ERROR_PWM_INIT_FAILED, "PWM_Init_PrescalerMap", __LINE__);

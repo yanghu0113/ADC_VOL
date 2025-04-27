@@ -25,12 +25,19 @@ void UI_Display_Init(void)
  */
 void UI_UpdateDisplay(void)
 {
-    // Clear the buffer before drawing new content
-    #ifdef OLED_USE_BUFFER
-    extern uint8_t OLED_GRAM[]; // Make buffer accessible
-    memset(OLED_GRAM, 0x00, sizeof(OLED_GRAM)); // Clear the buffer
-    #endif
+    // Clear the screen at the beginning of each update
+    OLED_Clear(); // Use the bool return if you want to check status
 
+    // --- Display Chinese Status ---
+
+    const uint8_t status_indices[] = {0, 1, 2, 3, 4, 5}; // 充, 电, 状, 态
+    uint8_t num_chars = sizeof(status_indices) / sizeof(status_indices[0]);
+
+    // Show the Chinese string at x=0, y=0 (first line, takes pages 0 and 1)
+    OLED_ShowChineseString(0, 0, status_indices, num_chars);
+    // Add error checking if needed: if (!OLED_ShowChineseString(...)) { /* handle error */ }
+
+    // --- Display ASCII Status ---
     SM_State_t current_sm_state = SM_GetCurrentState();
     float current_amps = 0.0f;
     char state_str[20] = "State: ";
@@ -59,11 +66,11 @@ void UI_UpdateDisplay(void)
         strcat(current_str, "0.0 A");
     }
 
-    // Update SPI OLED (Example layout: State on line 1, Current on line 2)
-    // Clear screen before drawing new content (if not using buffer or buffer clear)
-    // SPI_OLED_Clear(); // Optional: Clear full screen each update if needed
-   OLED_ShowString(0, 1, state_str, 6); // Use SPI function
-    OLED_ShowString(0, 2, current_str, 6); // Use SPI function
+    // Update SPI OLED - Adjust Y coordinates for ASCII text
+    // Display ASCII state on line 3 (page 2)
+    OLED_ShowString(0, 2, state_str, 6); // Use SPI function, moved to y=2
+    // Display ASCII current on line 4 (page 3)
+    OLED_ShowString(0, 3, current_str, 6); // Use SPI function, moved to y=3
 
 
     // Add other info (Voltage, Temperature from main.c?) to other lines if desired

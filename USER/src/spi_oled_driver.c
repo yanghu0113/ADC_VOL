@@ -6,11 +6,11 @@
 #include "cw32f003_rcc.h"   // RCC library
 #include "error_handler.h"  // Include the error handler
 #include "Font.h"           // Font data
+#include "system_cw32f003.h" // Include for FirmwareDelay declaration
 #include <string.h>         // For memset if using buffer
 
 
-extern void FirmwareDelay(uint32_t Cnt);
-
+//extern void FirmwareDelay(uint32_t Cnt);
 //--------------------------------------------------------------------------------------------------
 // SPI Low-Level Communication Functions for OLED
 // Define a reasonable timeout for SPI flag waits
@@ -480,3 +480,78 @@ void OLED_DrawPixel(uint8_t x, uint8_t y, uint8_t color)
 // Define the screen buffer if used
 uint8_t OLED_GRAM[OLED_WIDTH * OLED_HEIGHT / 8];
 #endif
+
+//--------------------------------------------------------------------------------------------------
+// Chinese Character Functions (Requires Font.h with aFontChinese16)
+//--------------------------------------------------------------------------------------------------
+
+/**
+ * @brief Displays a single 16x16 Chinese character at the specified position using its index.
+ * @param x Starting horizontal position (0-127).
+ * @param y Starting page position (0-7). Must be even for 16-pixel height.
+ * @param index Index of the character in the aFontChinese16 font array.
+ * @return true if successful, false if any SPI write fails or index is out of bounds.
+ */
+bool OLED_ShowChineseChar(uint8_t x, uint8_t y, uint8_t index)
+{
+    uint8_t i;
+    // Assuming aFontChinese16 is defined in Font.h
+    extern const unsigned char aFontChinese16[][32];
+    // Optional: Add bounds check for index if you know the size of aFontChinese16
+    // extern const unsigned int aFontChinese16_size; // Example declaration needed in Font.h
+    // if (index >= aFontChinese16_size) return false;
+
+    if (x > OLED_WIDTH - 16 || y > OLED_HEIGHT / 8 - 2) {
+        // Character would go off screen
+        return false; // Or handle wrap-around differently
+    }
+
+    // Draw top half (16 bytes)
+    if (!OLED_SetCursor(x, y)) return false;
+    for (i = 0; i < 16; i++) {
+        if (!OLED_WriteData(aFontChinese16[index][i])) return false;
+    }
+
+    // Draw bottom half (16 bytes)
+    if (!OLED_SetCursor(x, y + 1)) return false;
+    for (i = 0; i < 16; i++) {
+        if (!OLED_WriteData(aFontChinese16[index][i + 16])) return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Displays a string of 16x16 Chinese characters using an array of indices.
+ * @param x Starting horizontal position (0-127).
+ * @param y Starting page position (0-7). Must be even for 16-pixel height.
+ * @param indices Pointer to an array of character indices in aFontChinese16.
+ * @param count Number of characters (indices) in the array.
+ * @return true if successful, false if any character fails to display.
+ */
+bool OLED_ShowChineseString(uint8_t x, uint8_t y, const uint8_t* indices, uint8_t count)
+{
+    uint8_t i;
+    uint8_t current_x = x;
+    uint8_t current_y = y;
+    const uint8_t char_width = 16; // Width of Chinese characters
+
+    for (i = 0; i < count; i++) {
+        if (current_x > (OLED_WIDTH - char_width)) // Wrap to next line
+        {
+            current_x = 0;
+            current_y += 2; // Increment by 2 pages for 16-pixel height
+        }
+        if (current_y > (OLED_HEIGHT / 8 - 2)) // Check if exceeding screen height
+        {
+           current_y = 0; // Wrap to top
+           current_x = 0;
+        }
+
+        if (!OLED_ShowChineseChar(current_x, current_y, indices[i])) {
+            return false; // Propagate error
+        }
+        current_x += char_width;
+    }
+    return true;
+}

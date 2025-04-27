@@ -25,7 +25,7 @@ void SM_Init(void)
     PP_Signal_Init();
     Contactor_Init();
     AC_Measurement_Init();
-    // UI_Display_Init(); // Assuming UI has its own init if needed
+
 
     // Set initial state
     current_state = SM_STATE_IDLE; // Start in Idle (State A) after init

@@ -48,6 +48,8 @@ bool OLED_ShowString(uint8_t x, uint8_t y, char *str, uint8_t size); // Changed 
 bool OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size); // Changed return type
 bool OLED_ShowHexNum(uint8_t x, uint8_t y, uint32_t num, uint8_t len, uint8_t size); // Changed return type
 void OLED_DrawBMP(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]); // Keep void if not checking status
+bool OLED_ShowChineseChar(uint8_t x, uint8_t y, uint8_t index); // Function to show one Chinese char by index
+bool OLED_ShowChineseString(uint8_t x, uint8_t y, const uint8_t* indices, uint8_t count);// Function to show string by indices
 
 // Low-level SPI communication functions specific to OLED
 bool OLED_WriteCommand(uint8_t command); // Changed return type

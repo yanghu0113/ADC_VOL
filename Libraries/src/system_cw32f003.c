@@ -216,7 +216,7 @@ int __low_level_init(void)
 //}
 
 
-void FirmwareDelay(uint32_t DlyCnt )
+void FirmwareDelay(uint32_t DlyCnt)
 {
 	volatile uint32_t thisCnt = DlyCnt;
 	while( thisCnt-- )
