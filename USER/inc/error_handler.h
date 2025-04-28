@@ -30,7 +30,9 @@ void ErrorHandler_Handle(ErrorCode_t code, const char* module_name, uint32_t lin
  */
 ErrorCode_t ErrorHandler_GetLast(void);
 
-// Optional: Function to clear the last error status
-// void ErrorHandler_ClearLast(void);
+/**
+ * @brief Clears the last recorded error code, setting it back to ERROR_NONE.
+ */
+void ErrorHandler_ClearLast(void);
 
 #endif // __ERROR_HANDLER_H

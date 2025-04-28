@@ -1,12 +1,20 @@
 #ifndef __CONTACTOR_CONTROL_H
 #define __CONTACTOR_CONTROL_H
 
-#include "stdbool.h" // For bool type
+#include <stdbool.h> // Include for bool type
+
+// Enum for physical contactor state based on feedback
+typedef enum {
+    CONTACTOR_PHYS_OPEN,
+    CONTACTOR_PHYS_CLOSED,
+    CONTACTOR_PHYS_UNKNOWN // Optional: for initial state or read errors
+} ContactorPhysicalState_t;
 
 // Function Prototypes
-void Contactor_Init(void);      // Initialize GPIO pin for contactor control
-void Contactor_Open(void);      // Open the contactor (stop power flow)
-void Contactor_Close(void);     // Close the contactor (allow power flow)
-bool Contactor_IsClosed(void);  // Check if the contactor is currently closed (optional feedback)
+void Contactor_Init(void);
+void Contactor_Open(void);
+void Contactor_Close(void);
+bool Contactor_IsClosed(void); // Returns the *commanded* state
+ContactorPhysicalState_t Contactor_ReadFeedbackState(void); // Returns the *physical* state
 
 #endif // __CONTACTOR_CONTROL_H

@@ -84,9 +84,10 @@ ErrorCode_t ErrorHandler_GetLast(void)
     return last_error_code;
 }
 
-/* Optional: Implement ErrorHandler_ClearLast if needed
+/**
+ * @brief Clears the last recorded error code, setting it back to ERROR_NONE.
+ */
 void ErrorHandler_ClearLast(void)
 {
     last_error_code = ERROR_NONE;
 }
-*/

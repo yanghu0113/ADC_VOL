@@ -6,7 +6,16 @@
 #include "ui_display.h"     // To update UI based on state changes
 #include "config.h"         // May contain timing definitions etc.
 #include "error_handler.h"  // Include the error handler
+#include "system_cw32f003.h" // For FirmwareDelay
 #include <stdio.h>          // Keep for printf
+
+// Delay in approximate milliseconds to wait for contactor to physically switch
+// Adjust based on relay specification and testing
+#define CONTACTOR_SWITCH_DELAY_MS 100
+// Calculate delay count based on SystemCoreClock (assuming FirmwareDelay uses simple loop)
+// This is approximate! A SysTick-based delay would be more accurate.
+// Assuming 48MHz clock, need rough estimate. Let's use the value from OLED init for ~1ms.
+#define CONTACTOR_DELAY_COUNT (4800 * CONTACTOR_SWITCH_DELAY_MS / 1) // Approx count for delay
 
 // --- State Machine Variables ---
 static SM_State_t current_state = SM_STATE_INIT;
@@ -126,23 +135,54 @@ void SM_RunStateMachine(void)
 
         case SM_STATE_CHARGING_REQ: // State C: EV requests charging, prepare to close contactor
             // Add any pre-charge checks if necessary
-            Contactor_Close(); // Close the contactor
-            next_state = SM_STATE_CHARGING;
-            printf("SM: Contactor Closed. Charging Active.\n");
+            Contactor_Close(); // Command contactor closed
+            FirmwareDelay(CONTACTOR_DELAY_COUNT); // Wait for relay to switch
+
+            // Verify contactor closed
+            if (Contactor_ReadFeedbackState() == CONTACTOR_PHYS_CLOSED) {
+                next_state = SM_STATE_CHARGING;
+                printf("SM: Contactor Closed Confirmed. Charging Active.\n");
+            } else {
+                // Contactor failed to close!
+                ErrorHandler_Handle(ERROR_CONTACTOR_FAULT, "SM_ChargingReq", __LINE__);
+                Contactor_Open(); // Attempt to ensure it's open
+                next_state = SM_STATE_FAULT;
+                printf("SM: Contactor Close FAILED! Entering Fault.\n");
+            }
             break;
 
         case SM_STATE_CHARGING: // State C Active: Power flowing
             if (cp_state == CP_STATE_B_9V) {
                 // EV stopped charging request (but still connected)
-                Contactor_Open();
-                next_state = SM_STATE_CONNECTED;
-                printf("SM: Charging Stopped by EV (State B). Contactor Opened.\n");
+                Contactor_Open(); // Command contactor open
+                FirmwareDelay(CONTACTOR_DELAY_COUNT); // Wait for relay to switch
+
+                // Verify contactor opened
+                if (Contactor_ReadFeedbackState() == CONTACTOR_PHYS_OPEN) {
+                    next_state = SM_STATE_CONNECTED;
+                    printf("SM: Charging Stopped by EV (State B). Contactor Opened Confirmed.\n");
+                } else {
+                    // Contactor failed to open (Welded?)!
+                    ErrorHandler_Handle(ERROR_CONTACTOR_FAULT, "SM_Charging_Stop", __LINE__);
+                    next_state = SM_STATE_FAULT;
+                    printf("SM: Contactor Open FAILED! Entering Fault.\n");
+                }
             } else if (cp_state == CP_STATE_A_12V) {
                 // Vehicle disconnected during charging (should not happen ideally)
-                Contactor_Open();
-                next_state = SM_STATE_IDLE;
-                CP_SetMaxCurrentPWM(0); // Reset PWM (State A)
-                printf("SM: Vehicle Disconnected during Charging! Contactor Opened.\n");
+                Contactor_Open(); // Command contactor open
+                FirmwareDelay(CONTACTOR_DELAY_COUNT); // Wait for relay to switch
+
+                // Verify contactor opened
+                if (Contactor_ReadFeedbackState() == CONTACTOR_PHYS_OPEN) {
+                    next_state = SM_STATE_IDLE;
+                    CP_SetMaxCurrentPWM(0); // Reset PWM (State A)
+                    printf("SM: Vehicle Disconnected during Charging. Contactor Opened Confirmed.\n");
+                } else {
+                    // Contactor failed to open (Welded?)!
+                    ErrorHandler_Handle(ERROR_CONTACTOR_FAULT, "SM_Charging_Disconnect", __LINE__);
+                    next_state = SM_STATE_FAULT;
+                    printf("SM: Contactor Open FAILED after disconnect! Entering Fault.\n");
+                }
             }
             // CP Fault check moved above the switch statement
 
@@ -170,12 +210,17 @@ void SM_RunStateMachine(void)
             // Example recovery: Check if CP state returns to A (vehicle disconnected)
             // We need to read CP state again here if we want to check for recovery within the fault state.
             cp_state = CP_ReadState(); // Re-read CP state
-            if (cp_state == CP_STATE_A_12V) {
-                 printf("SM: Fault condition potentially cleared (CP State A detected). Returning to IDLE.\n");
-                 // Optional: Clear the last error? ErrorHandler_ClearLast();
+
+            // Check for recovery condition: CP is State A AND Contactor is confirmed Open
+            if (cp_state == CP_STATE_A_12V && Contactor_ReadFeedbackState() == CONTACTOR_PHYS_OPEN) {
+                 printf("SM: Fault condition cleared (CP State A & Contactor Open). Returning to IDLE.\n");
+                 ErrorHandler_ClearLast(); // Clear the stored error code
                  next_state = SM_STATE_IDLE;
+            } else if (cp_state == CP_STATE_FAULT) {
+                 // If CP read itself faults again, stay in FAULT state (error already logged)
+                 // Do nothing, remain in fault state
             }
-            // Otherwise, remain in FAULT state.
+            // Otherwise (e.g., CP is B/C/D or Contactor feedback still shows closed), remain in FAULT state.
             break;
 
         case SM_STATE_INIT: // Should not stay here

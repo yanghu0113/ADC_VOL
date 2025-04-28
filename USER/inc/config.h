@@ -43,6 +43,19 @@
 #define HLW_USART_RX_AF_FUNC()  PC00_AFx_UART2RXD() // Verify this macro exists and is correct
 #define HLW_USART_TX_AF_FUNC()  PC01_AFx_UART2TXD() // Verify this macro exists and is correct
 
+// Contactor Control Pins
+#define CONTACTOR_CTRL_GPIO_PORT     CW_GPIOB   // Example: Use GPIOB for control
+#define CONTACTOR_CTRL_GPIO_PIN      GPIO_PIN_3 // Example: Use PB0 for control output
+#define CONTACTOR_CTRL_GPIO_CLK_ENABLE() __RCC_GPIOB_CLK_ENABLE() // Enable GPIOB clock
+#define CONTACTOR_OPEN_STATE    0          // Logic level (e.g., 0) to command contactor open
+#define CONTACTOR_CLOSED_STATE  1          // Logic level (e.g., 1) to command contactor closed
+
+// Contactor Feedback Pin
+#define CONTACTOR_FB_GPIO_PORT     CW_GPIOB   // Feedback on GPIOB
+#define CONTACTOR_FB_GPIO_PIN      GPIO_PIN_1 // Feedback on PB1
+#define CONTACTOR_FB_GPIO_CLK_ENABLE() __RCC_GPIOB_CLK_ENABLE() // Enable GPIOB clock (can be same as control)
+#define CONTACTOR_FEEDBACK_IS_CLOSED_STATE 1 // Logic level '1' (HIGH) means contactor is physically closed
+
 
 //-----------------------------------------------------------------------------
 // Peripheral Configuration Defaults
