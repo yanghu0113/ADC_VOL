@@ -9,7 +9,8 @@
 #include "error_handler.h" // Include the error handler
 #include <stdio.h>         // Keep for now, maybe remove later
 
-
+// Number of ADC samples to average for CP state reading
+#define CP_ADC_AVG_SAMPLES 8
 
 // --- Initialization ---
 
@@ -134,25 +135,32 @@ CP_State_t CP_ReadState(void)
     const uint16_t THRESHOLD_D_MIN = 600;  // Min raw value for State D
     const uint16_t ADC_ERROR_VALUE = 0xFFFF; // Value returned by ADC_Read_Channel_Raw on timeout
 
-    uint16_t adc_raw = ADC_Read_Channel_Raw(ADC_ExInputCH1); // Read CP channel
+    uint32_t adc_sum = 0;
+    uint16_t adc_raw_single = 0;
+    uint16_t adc_raw_avg = 0;
+    int i;
 
-    // Check for ADC read error (timeout)
-    if (adc_raw == ADC_ERROR_VALUE) {
-        // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
-        return CP_STATE_FAULT; // Return fault state
+    // Read multiple samples and average
+    for (i = 0; i < CP_ADC_AVG_SAMPLES; i++) {
+        adc_raw_single = ADC_Read_Channel_Raw(ADC_ExInputCH1); // Read CP channel
+
+        // Check for ADC read error (timeout) on any sample
+        if (adc_raw_single == ADC_ERROR_VALUE) {
+            // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
+            return CP_STATE_FAULT; // Return fault state immediately
+        }
+        adc_sum += adc_raw_single;
     }
+    adc_raw_avg = (uint16_t)(adc_sum / CP_ADC_AVG_SAMPLES);
 
-    // Add simple averaging or filtering here if needed for stability
-    // Note: If averaging, check each raw read for ADC_ERROR_VALUE
-
-    // Determine state based on thresholds
-    if (adc_raw >= THRESHOLD_A_MIN) {
+    // Determine state based on the *average* thresholds
+    if (adc_raw_avg >= THRESHOLD_A_MIN) {
         return CP_STATE_A_12V;
-    } else if (adc_raw >= THRESHOLD_B_MIN) {
+    } else if (adc_raw_avg >= THRESHOLD_B_MIN) {
         return CP_STATE_B_9V;
-    } else if (adc_raw >= THRESHOLD_C_MIN) {
+    } else if (adc_raw_avg >= THRESHOLD_C_MIN) {
         return CP_STATE_C_6V;
-    } else if (adc_raw >= THRESHOLD_D_MIN) {
+    } else if (adc_raw_avg >= THRESHOLD_D_MIN) {
         return CP_STATE_D_3V;
     } else {
         // Treat values below D threshold as E (0V), F (-12V clamped), or other fault

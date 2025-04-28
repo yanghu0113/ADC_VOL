@@ -6,7 +6,8 @@
 #include "cw32f003_gpio.h"
 #include "error_handler.h" // Include the error handler
 
-
+// Number of ADC samples to average for PP capacity reading
+#define PP_ADC_AVG_SAMPLES 8
 
 // --- Initialization ---
 
@@ -67,25 +68,33 @@ uint16_t PP_GetCableCapacity(void)
     const uint16_t THRESHOLD_63A_HIGH = 500;
     const uint16_t ADC_ERROR_VALUE = 0xFFFF; // Value returned by ADC_Read_Channel_Raw on timeout
 
-    uint16_t adc_raw = ADC_Read_Channel_Raw(PP_ADC_CHANNEL); // Read PP channel using defined constant
+    uint32_t adc_sum = 0;
+    uint16_t adc_raw_single = 0;
+    uint16_t adc_raw_avg = 0;
+    int i;
 
-    // Check for ADC read error (timeout)
-    if (adc_raw == ADC_ERROR_VALUE) {
-        // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
-        return PP_CAPACITY_UNKNOWN; // Return unknown capacity on ADC error
+    // Read multiple samples and average
+    for (i = 0; i < PP_ADC_AVG_SAMPLES; i++) {
+        adc_raw_single = ADC_Read_Channel_Raw(PP_ADC_CHANNEL); // Read PP channel
+
+        // Check for ADC read error (timeout) on any sample
+        if (adc_raw_single == ADC_ERROR_VALUE) {
+            // Error already reported by ADC_Read_Channel_Raw via ErrorHandler_Handle
+            return PP_CAPACITY_UNKNOWN; // Return unknown capacity immediately
+        }
+        adc_sum += adc_raw_single;
     }
+    adc_raw_avg = (uint16_t)(adc_sum / PP_ADC_AVG_SAMPLES);
 
-    // Add simple averaging or filtering here if needed for stability
-    // Note: If averaging, check each raw read for ADC_ERROR_VALUE
 
-    // Determine capacity based on thresholds
-    if (adc_raw >= THRESHOLD_13A_LOW && adc_raw <= THRESHOLD_13A_HIGH) {
+    // Determine capacity based on the *average* thresholds
+    if (adc_raw_avg >= THRESHOLD_13A_LOW && adc_raw_avg <= THRESHOLD_13A_HIGH) {
         return PP_CAPACITY_13A;
-    } else if (adc_raw >= THRESHOLD_20A_LOW && adc_raw <= THRESHOLD_20A_HIGH) {
+    } else if (adc_raw_avg >= THRESHOLD_20A_LOW && adc_raw_avg <= THRESHOLD_20A_HIGH) {
         return PP_CAPACITY_20A;
-    } else if (adc_raw >= THRESHOLD_32A_LOW && adc_raw <= THRESHOLD_32A_HIGH) {
+    } else if (adc_raw_avg >= THRESHOLD_32A_LOW && adc_raw_avg <= THRESHOLD_32A_HIGH) {
         return PP_CAPACITY_32A;
-    } else if (adc_raw >= THRESHOLD_63A_LOW && adc_raw <= THRESHOLD_63A_HIGH) {
+    } else if (adc_raw_avg >= THRESHOLD_63A_LOW && adc_raw_avg <= THRESHOLD_63A_HIGH) {
         return PP_CAPACITY_63A;
     } else {
         // Outside known ranges, or very low/high values indicating open/short

@@ -3,7 +3,10 @@
         "oled_driver.h": "c",
         "cw32f003_iwdt.h": "c",
         "ac_measurement.h": "c",
-        "charging_sm.h": "c"
+        "charging_sm.h": "c",
+        "error_handler.h": "c",
+        "error_codes.h": "c",
+        "spi_oled_driver.h": "c"
     },
     "C_Cpp.autocomplete": "disabled"
 }

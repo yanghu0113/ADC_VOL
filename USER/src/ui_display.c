@@ -2,6 +2,7 @@
 #include "spi_oled_driver.h" // Use SPI OLED driver
 #include "charging_sm.h"     // To get current state
 #include "ac_measurement.h"  // To get current reading
+#include "error_handler.h"   // Include error handler
 #include <stdio.h>          // For sprintf
 #include <string.h>         // For memset
 
@@ -25,15 +26,35 @@ void UI_Display_Init(void)
  */
 void UI_UpdateDisplay(void)
 {
+    ErrorCode_t current_error = ErrorHandler_GetLast();
+
     // Clear the screen at the beginning of each update
-    OLED_Clear(); // Use the bool return if you want to check status
+    OLED_Clear(); // Assuming this returns bool, handle if needed
 
-    // --- Display Chinese Status ---
+    if (current_error != ERROR_NONE) {
+        // --- Display Error Information ---
+        char error_msg[20];
+        // Display generic fault message or map code to specific text
+        sprintf(error_msg, "FAULT: Code %d", (int)current_error);
 
-    const uint8_t status_indices[] = {0, 1, 2, 3, 4, 5}; // 充, 电, 状, 态
-    uint8_t num_chars = sizeof(status_indices) / sizeof(status_indices[0]);
+        // Display the error message (e.g., using 8x16 font for visibility)
+        OLED_ShowString(0, 0, "----------------", 8); // Example separator
+        OLED_ShowString(0, 2, error_msg, 8);          // Display error code on line 3 (pages 2,3)
+        OLED_ShowString(0, 4, "----------------", 8); // Example separator
 
-    // Show the Chinese string at x=0, y=0 (first line, takes pages 0 and 1)
+        // Optionally display specific Chinese error text if available and mapped
+        // const uint8_t fault_indices[] = { /* indices for "故障" */ };
+        // OLED_ShowChineseString(0, 0, fault_indices, sizeof(fault_indices));
+
+    } else {
+        // --- Display Normal Status Information ---
+
+        // Display Chinese Status (e.g., "充电状态")
+        // Indices: 0="充", 1="电", 2="枪", 3="状", 4="态"
+        // NOTE: Index 5 is out of bounds for the current aFontChinese16 array! Correcting.
+        const uint8_t status_indices[] = {0, 1, 3, 4}; // 充, 电, 状, 态
+    uint8_t num_chars = sizeof(status_indices) / sizeof(status_indices[0]);//数组元素个数=数组总字节数/单个元素字节数
+
     OLED_ShowChineseString(0, 0, status_indices, num_chars);
     // Add error checking if needed: if (!OLED_ShowChineseString(...)) { /* handle error */ }
 
@@ -47,7 +68,7 @@ void UI_UpdateDisplay(void)
     // Get state string
     switch (current_sm_state)
     {
-        case SM_STATE_INIT:         strcat(state_str, "INIT"); break;
+        case SM_STATE_INIT:         strcat(state_str, "INIT"); break;//将字符串常量 "INIT" 追加到目标字符串 state_str 的末尾
         case SM_STATE_IDLE:         strcat(state_str, "IDLE (A)"); break;
         case SM_STATE_CONNECTED:    strcat(state_str, "CONN (B)"); break;
         case SM_STATE_CHARGING_REQ: strcat(state_str, "REQ (C)"); break;
@@ -59,7 +80,7 @@ void UI_UpdateDisplay(void)
 
     // Get current only if charging
     if (current_sm_state == SM_STATE_CHARGING) {
-        current_amps = AC_GetCurrent(); // Get (simulated) current
+        current_amps = AC_GetCurrent(); 
         sprintf(temp_buf, "%.1f A", current_amps); // Format current with 1 decimal place
         strcat(current_str, temp_buf);
     } else {
@@ -68,9 +89,9 @@ void UI_UpdateDisplay(void)
 
     // Update SPI OLED - Adjust Y coordinates for ASCII text
     // Display ASCII state on line 3 (page 2)
-    OLED_ShowString(0, 2, state_str, 6); // Use SPI function, moved to y=2
+    OLED_ShowString(0,2 , state_str, 8); // Use SPI function, moved to y=2
     // Display ASCII current on line 4 (page 3)
-    OLED_ShowString(0, 3, current_str, 6); // Use SPI function, moved to y=3
+    OLED_ShowString(0,4 , current_str, 8); // Use SPI function, moved to y=3
 
 
     // Add other info (Voltage, Temperature from main.c?) to other lines if desired
@@ -78,6 +99,7 @@ void UI_UpdateDisplay(void)
 
     // Update the physical screen from the buffer if enabled
     #ifdef SPI_OLED_USE_BUFFER // Check SPI buffer define if used
-    SPI_OLED_UpdateScreen();
+    // SPI_OLED_UpdateScreen(); // Or OLED_UpdateScreen() depending on definition
     #endif
+    } // End of else block (normal display)
 }

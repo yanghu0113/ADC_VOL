@@ -15,3 +15,5 @@
 .\output\exe\ui_display.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\output\exe\ui_display.o: ..\USER\inc\charging_sm.h
 .\output\exe\ui_display.o: ..\USER\inc\ac_measurement.h
+.\output\exe\ui_display.o: ..\USER\inc\error_handler.h
+.\output\exe\ui_display.o: ..\USER\inc\error_codes.h

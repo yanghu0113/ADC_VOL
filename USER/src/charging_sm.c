@@ -78,7 +78,7 @@ void SM_RunStateMachine(void)
         case SM_STATE_IDLE: // State A: Waiting for vehicle connection
             if (cp_state == CP_STATE_B_9V || cp_state == CP_STATE_C_6V || cp_state == CP_STATE_D_3V) {
                 // Vehicle detected (CP voltage dropped from +12V)
-                cable_capacity_amps = PP_GetCableCapacity(); // Read cable capacity (simulated)
+                cable_capacity_amps = PP_GetCableCapacity();
                 if (cable_capacity_amps == PP_CAPACITY_UNKNOWN) {
                     next_state = SM_STATE_FAULT; // PP Error
                     printf("SM: PP Fault Detected!\n");
